@@ -1,0 +1,464 @@
+{
+  "extraction": {
+    "before": {
+      "entities": 1,
+      "endpoints": 2,
+      "auth_flows": [
+        "API Key"
+      ]
+    },
+    "after": {
+      "entities": 1,
+      "endpoints": 3,
+      "auth_flows": [
+        "OAuth 2.0"
+      ]
+    }
+  },
+  "change_events": [
+    {
+      "event_id": "45d902db-8b28-44b6-b264-0e84757997d9",
+      "shift": "SCOPE_WIDENED",
+      "severity": "LOW",
+      "entity": "User.contact_methods",
+      "before": "<not present>",
+      "after": "ARRAY",
+      "reasoning": "New optional field 'User.contact_methods' added.",
+      "confidence": 0.85
+    },
+    {
+      "event_id": "0953d6a2-ddda-4ac8-8bf4-3b44be03cdbc",
+      "shift": "SCOPE_WIDENED",
+      "severity": "LOW",
+      "entity": "User.risk_score",
+      "before": "<not present>",
+      "after": "FLOAT",
+      "reasoning": "New optional field 'User.risk_score' added.",
+      "confidence": 0.85
+    },
+    {
+      "event_id": "349ae032-8e29-4202-af57-d9de547424c7",
+      "shift": "NULLABILITY_CHANGED",
+      "severity": "LOW",
+      "entity": "User.email",
+      "before": "required=True",
+      "after": "required=False",
+      "reasoning": "'User.email' changed from required to optional. Existing integrations unaffected.",
+      "confidence": 0.9
+    },
+    {
+      "event_id": "93f30dc2-d301-4dc1-aac8-c31ecb0bb8e9",
+      "shift": "STATE_SPACE_EXPANDED",
+      "severity": "HIGH",
+      "entity": "User.status",
+      "before": "BOOLEAN",
+      "after": "ENUM",
+      "reasoning": "Type of 'User.status' changed from BOOLEAN to ENUM.",
+      "confidence": 0.95
+    },
+    {
+      "event_id": "3a32b9ed-145e-40a8-8523-8d51572d407f",
+      "shift": "NULLABILITY_CHANGED",
+      "severity": "HIGH",
+      "entity": "User.department",
+      "before": "required=False",
+      "after": "required=True",
+      "reasoning": "'User.department' changed from optional to required. Integrations not providing it will fail.",
+      "confidence": 0.9
+    },
+    {
+      "event_id": "e1cfbd3d-fecf-4713-87d8-bb3aec9ed085",
+      "shift": "NULLABILITY_CHANGED",
+      "severity": "HIGH",
+      "entity": "User.manager_id",
+      "before": "required=False",
+      "after": "required=True",
+      "reasoning": "'User.manager_id' changed from optional to required. Integrations not providing it will fail.",
+      "confidence": 0.9
+    },
+    {
+      "event_id": "dcaafca9-80eb-461a-bac2-b36742f2b0af",
+      "shift": "DEPRECATION_ANNOUNCED",
+      "severity": "MEDIUM",
+      "entity": "User.phone",
+      "before": "active",
+      "after": "deprecated",
+      "reasoning": "'User.phone' has been marked as deprecated. Plan migration before removal.",
+      "confidence": 0.95
+    },
+    {
+      "event_id": "50569f60-30c5-480d-a324-98dfa146aba5",
+      "shift": "SCOPE_WIDENED",
+      "severity": "INFO",
+      "entity": "POST /User/{id}/lifecycle",
+      "before": "<not present>",
+      "after": "POST /User/{id}/lifecycle",
+      "reasoning": "New endpoint 'POST /User/{id}/lifecycle' added.",
+      "confidence": 0.9
+    },
+    {
+      "event_id": "d9197668-aa13-4bc5-829d-4b8c6aa8d62d",
+      "shift": "BREAKING_REMOVAL",
+      "severity": "CRITICAL",
+      "entity": "auth_flows",
+      "before": "['API Key']",
+      "after": "['OAuth 2.0']",
+      "reasoning": "Auth flows removed: ['API Key']. Integrations using them will fail to authenticate.",
+      "confidence": 0.85
+    },
+    {
+      "event_id": "517a5227-34ed-4277-9b67-92ec1defe8ca",
+      "shift": "DEPRECATION_ANNOUNCED",
+      "severity": "MEDIUM",
+      "entity": "deprecation_notices",
+      "before": "0 notices",
+      "after": "2 notices",
+      "reasoning": "New deprecation notices: ['phone field: Use contact_methods', 'API Key auth: Removed in v62']",
+      "confidence": 0.8
+    }
+  ],
+  "impact_graph": {
+    "events_with_impact": 2,
+    "results": [
+      {
+        "entity": "User.email",
+        "affected_systems": [
+          "Identity Correlation Decision",
+          "Salesforce Application Access",
+          "Quarterly Access Review"
+        ],
+        "risk_score": 0.4,
+        "recommendations": [
+          "CHECK REQUIRED HANDLING: 'User.email' nullability changed. Verify correlation and provisioning rules handle the new contract.",
+          "COMPLIANCE IMPACT: Access review process affected. Confirm audit trail and review workflows are intact.",
+          "DEEP PROPAGATION: Change affects systems up to 5 layers downstream. Consider a phased rollout with monitoring at each layer."
+        ]
+      },
+      {
+        "entity": "User.status",
+        "affected_systems": [
+          "Account Enable/Disable Decision",
+          "AD Group: Salesforce Users",
+          "Employee Offboarding",
+          "Salesforce Application Access",
+          "Quarterly Access Review"
+        ],
+        "risk_score": 1.0,
+        "recommendations": [
+          "UPDATE MAPPINGS: 'User.status' type/values changed. Review transformation logic in attribute mappings.",
+          "SECURITY IMPACT: Employee offboarding process affected. Verify access revocation still works correctly.",
+          "COMPLIANCE IMPACT: Access review process affected. Confirm audit trail and review workflows are intact.",
+          "DEEP PROPAGATION: Change affects systems up to 6 layers downstream. Consider a phased rollout with monitoring at each layer."
+        ]
+      }
+    ]
+  },
+  "domain_analysis": [
+    {
+      "domain": "IGA",
+      "executive_summary": "Detected 7 IGA-relevant change(s). 1 CRITICAL requiring immediate action. 3 HIGH priority items for this sprint. Top concern: Authentication change: auth_flows",
+      "critical_count": 1,
+      "high_count": 3,
+      "alerts": [
+        {
+          "title": "Authentication change: auth_flows",
+          "severity": "CRITICAL",
+          "entity": "auth_flows",
+          "shift": "BREAKING_REMOVAL",
+          "summary": "Authentication mechanism changed (BREAKING_REMOVAL). Connector authentication will fail if not updated immediately. Before: ['API Key'] \u2192 After: ['OAuth 2.0']",
+          "affected_systems": [
+            "All Connectors for this source",
+            "Service Accounts",
+            "Scheduled Aggregation Jobs",
+            "Provisioning Operations"
+          ],
+          "risk_score": 1.0,
+          "tags": [
+            "auth",
+            "breaking",
+            "urgent"
+          ],
+          "remediation": [
+            {
+              "priority": 1,
+              "action": "Update connector authentication configuration immediately",
+              "system": "Source Connection Config",
+              "assignee": "IAM Engineering",
+              "effort": "1 hour"
+            },
+            {
+              "priority": 2,
+              "action": "Rotate service account credentials to new auth method",
+              "system": "Secret Management",
+              "assignee": "IAM Ops",
+              "effort": "30 min"
+            },
+            {
+              "priority": 3,
+              "action": "Test aggregation and provisioning with new auth",
+              "system": "Identity Platform",
+              "assignee": "IAM Engineering",
+              "effort": "1 hour"
+            }
+          ]
+        },
+        {
+          "title": "Lifecycle field changed: User.status",
+          "severity": "HIGH",
+          "entity": "User.status",
+          "shift": "STATE_SPACE_EXPANDED",
+          "summary": "Account lifecycle field 'User.status' changed (STATE_SPACE_EXPANDED). This directly affects enable/disable provisioning decisions. Before: BOOLEAN \u2192 After: ENUM",
+          "affected_systems": [
+            "Provisioning Connector",
+            "Lifecycle Workflows (JML)",
+            "Access Certification",
+            "Audit Reports"
+          ],
+          "risk_score": 0.9,
+          "tags": [
+            "lifecycle",
+            "provisioning",
+            "warning"
+          ],
+          "remediation": [
+            {
+              "priority": 1,
+              "action": "Update connector attribute mapping to handle new states: ENUM",
+              "system": "SailPoint IdentityNow / Saviynt",
+              "assignee": "IAM Engineering",
+              "effort": "2\u20134 hours"
+            },
+            {
+              "priority": 2,
+              "action": "Add transformation rules for new states \u2192 enable/disable/suspend decisions",
+              "system": "Provisioning Policy",
+              "assignee": "IAM Engineering",
+              "effort": "1\u20132 hours"
+            },
+            {
+              "priority": 3,
+              "action": "Update lifecycle workflows (JML) to handle new state transitions",
+              "system": "Lifecycle Manager",
+              "assignee": "IAM Ops",
+              "effort": "4 hours"
+            },
+            {
+              "priority": 4,
+              "action": "Add monitoring for unhandled states in provisioning logs",
+              "system": "SIEM / Splunk",
+              "assignee": "Security Operations",
+              "effort": "30 min"
+            }
+          ]
+        },
+        {
+          "title": "Governance attribute changed: User.department",
+          "severity": "HIGH",
+          "entity": "User.department",
+          "shift": "NULLABILITY_CHANGED",
+          "summary": "Governance attribute 'User.department' changed (NULLABILITY_CHANGED). May affect access policies, segregation of duties, and reporting.",
+          "affected_systems": [
+            "Access Policies (ABAC)",
+            "Segregation of Duties",
+            "Manager Certification",
+            "Org-based Provisioning"
+          ],
+          "risk_score": 0.5,
+          "tags": [
+            "governance",
+            "compliance"
+          ],
+          "remediation": [
+            {
+              "priority": 1,
+              "action": "Review ABAC policies referencing this attribute",
+              "system": "Policy Engine",
+              "assignee": "IAM Engineering",
+              "effort": "1 hour"
+            },
+            {
+              "priority": 2,
+              "action": "Verify SoD rules still evaluate correctly with new field contract",
+              "system": "SoD Engine",
+              "assignee": "GRC Team",
+              "effort": "2 hours"
+            }
+          ]
+        },
+        {
+          "title": "API change detected: User.manager_id",
+          "severity": "HIGH",
+          "entity": "User.manager_id",
+          "shift": "NULLABILITY_CHANGED",
+          "summary": "'User.manager_id' changed from optional to required. Integrations not providing it will fail.",
+          "affected_systems": [
+            "Monitor"
+          ],
+          "risk_score": 0.2,
+          "tags": [
+            "informational"
+          ],
+          "remediation": []
+        },
+        {
+          "title": "Deprecation notice: User.phone",
+          "severity": "MEDIUM",
+          "entity": "User.phone",
+          "shift": "DEPRECATION_ANNOUNCED",
+          "summary": "'User.phone' is deprecated and will be removed in a future version. Plan migration before removal causes connector failure.",
+          "affected_systems": [
+            "Connector Attribute Mapping",
+            "Transformation Rules"
+          ],
+          "risk_score": 0.4,
+          "tags": [
+            "deprecation",
+            "plan-ahead"
+          ],
+          "remediation": [
+            {
+              "priority": 1,
+              "action": "Identify replacement field in vendor documentation",
+              "system": "Vendor API Docs",
+              "assignee": "IAM Engineering",
+              "effort": "30 min"
+            },
+            {
+              "priority": 2,
+              "action": "Schedule connector update in next maintenance window",
+              "system": "Change Management",
+              "assignee": "IAM Ops",
+              "effort": "Plan: 1 sprint"
+            }
+          ]
+        },
+        {
+          "title": "Deprecation notice: deprecation_notices",
+          "severity": "MEDIUM",
+          "entity": "deprecation_notices",
+          "shift": "DEPRECATION_ANNOUNCED",
+          "summary": "'deprecation_notices' is deprecated and will be removed in a future version. Plan migration before removal causes connector failure.",
+          "affected_systems": [
+            "Connector Attribute Mapping",
+            "Transformation Rules"
+          ],
+          "risk_score": 0.4,
+          "tags": [
+            "deprecation",
+            "plan-ahead"
+          ],
+          "remediation": [
+            {
+              "priority": 1,
+              "action": "Identify replacement field in vendor documentation",
+              "system": "Vendor API Docs",
+              "assignee": "IAM Engineering",
+              "effort": "30 min"
+            },
+            {
+              "priority": 2,
+              "action": "Schedule connector update in next maintenance window",
+              "system": "Change Management",
+              "assignee": "IAM Ops",
+              "effort": "Plan: 1 sprint"
+            }
+          ]
+        },
+        {
+          "title": "Correlation key changed: User.email",
+          "severity": "LOW",
+          "entity": "User.email",
+          "shift": "NULLABILITY_CHANGED",
+          "summary": "Identity correlation field 'User.email' changed (NULLABILITY_CHANGED). This may break account matching between systems. Orphaned accounts or duplicate identities may result.",
+          "affected_systems": [
+            "Identity Correlation Engine",
+            "Account Aggregation",
+            "Joiner Process",
+            "Access Reviews"
+          ],
+          "risk_score": 0.8,
+          "tags": [
+            "correlation",
+            "identity-matching"
+          ],
+          "remediation": [
+            {
+              "priority": 1,
+              "action": "Verify correlation rule still resolves identities correctly",
+              "system": "Correlation Config",
+              "assignee": "IAM Engineering",
+              "effort": "1 hour"
+            },
+            {
+              "priority": 2,
+              "action": "Run test aggregation and check for orphan/duplicate accounts",
+              "system": "Identity Governance Platform",
+              "assignee": "IAM Ops",
+              "effort": "2 hours"
+            },
+            {
+              "priority": 3,
+              "action": "Update correlation rule if field name or format changed",
+              "system": "Source Configuration",
+              "assignee": "IAM Engineering",
+              "effort": "1 hour"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "domain": "RFP",
+      "executive_summary": "Detected 3 procurement-relevant change(s).",
+      "critical_count": 0,
+      "high_count": 0,
+      "alerts": [
+        {
+          "title": "RFP change detected: User.contact_methods",
+          "severity": "LOW",
+          "entity": "User.contact_methods",
+          "shift": "SCOPE_WIDENED",
+          "summary": "New optional field 'User.contact_methods' added.",
+          "affected_systems": [
+            "Proposal Team"
+          ],
+          "risk_score": 0.2,
+          "tags": [
+            "informational"
+          ],
+          "remediation": []
+        },
+        {
+          "title": "RFP change detected: User.risk_score",
+          "severity": "LOW",
+          "entity": "User.risk_score",
+          "shift": "SCOPE_WIDENED",
+          "summary": "New optional field 'User.risk_score' added.",
+          "affected_systems": [
+            "Proposal Team"
+          ],
+          "risk_score": 0.2,
+          "tags": [
+            "informational"
+          ],
+          "remediation": []
+        },
+        {
+          "title": "RFP change detected: POST /User/{id}/lifecycle",
+          "severity": "INFO",
+          "entity": "POST /User/{id}/lifecycle",
+          "shift": "SCOPE_WIDENED",
+          "summary": "New endpoint 'POST /User/{id}/lifecycle' added.",
+          "affected_systems": [
+            "Proposal Team"
+          ],
+          "risk_score": 0.2,
+          "tags": [
+            "informational"
+          ],
+          "remediation": []
+        }
+      ]
+    }
+  ]
+}
