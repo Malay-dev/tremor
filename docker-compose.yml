@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: tremor
+      POSTGRES_PASSWORD: tremor
+    ports:
+      - "5432:5432"
+
+  neo4j:
+    image: neo4j:5
+    environment:
+      NEO4J_AUTH: neo4j/tremor123
+    ports:
+      - "7474:7474"
+      - "7687:7687"
