@@ -20,7 +20,7 @@ export default function Inspector({ step, onClose }: Props) {
 
   return (
     <div
-      className="fixed top-0 right-0 h-full w-[420px] border-l overflow-y-auto z-40"
+      className="absolute top-0 right-0 h-full w-[400px] border-l overflow-y-auto z-40"
       style={{ background: "var(--surface)", borderColor: "var(--border)" }}
     >
       {/* Header */}
