@@ -18,11 +18,17 @@
 
 html, body {
   margin: 0;
-  background: var(--bg);
-  color: var(--text);
+  background: #FAFBFC;
+  color: #0F172A;
   font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+}
+
+/* Dotted page background */
+body {
+  background-image: radial-gradient(circle, #D1D5DB 1px, transparent 1px);
+  background-size: 24px 24px;
 }
 
 /* Halftone texture overlay */
@@ -102,13 +108,3 @@ html, body {
   color: var(--text) !important;
 }
 .react-flow__controls-button:last-child { border-bottom: none !important; }
-
-/* Grain overlay for the whole page */
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.015'/%3E%3C/svg%3E");
-  pointer-events: none;
-  z-index: 9999;
-}
