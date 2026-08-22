@@ -188,6 +188,11 @@ async def process_pending_pairs():
         if result.events:
             processed_events.extend(result.events)
 
+            # Fire notifications (WebSocket + Slack/Telegram)
+            from tremor.notifications import dispatcher as notif_dispatcher
+
+            await notif_dispatcher.notify_batch(result.events)
+
         impact_summary = []
         for impact in result.impacts:
             impact_summary.append({
@@ -207,11 +212,16 @@ async def process_pending_pairs():
 
     total_events = sum(r["events_detected"] for r in results)
     total_impacts = sum(len(r["impacts"]) for r in results)
+
+    # Report notification channel status
+    from tremor.notifications import dispatcher as notif_dispatcher
+
     return {
         "status": "processed",
         "pairs_processed": len(results),
         "total_events": total_events,
         "total_impacts": total_impacts,
+        "notifications": notif_dispatcher.configured_channels,
         "results": results,
     }
 

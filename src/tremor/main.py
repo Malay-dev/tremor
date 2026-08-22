@@ -1,11 +1,13 @@
 from dotenv import load_dotenv
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 import tremor.adapters  # noqa: F401 — registers adapters on import
 from tremor.adapters.router import router as adapters_router
 from tremor.graph.router import router as graph_router
 from tremor.ingestion.collector import router as collector_router
 from tremor.ingestion.gateway import router as ingestion_router
+from tremor.realtime.websocket import router as ws_router
 
 load_dotenv()
 
@@ -15,10 +17,20 @@ app = FastAPI(
     version='0.1.0'
 )
 
+# CORS — allow frontend dev servers and any origin for hackathon
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.include_router(ingestion_router)
 app.include_router(collector_router)
 app.include_router(graph_router)
 app.include_router(adapters_router)
+app.include_router(ws_router)
 
 @app.get("/health")
 async def health():
