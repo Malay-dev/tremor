@@ -6,27 +6,24 @@ interface Props {
   data: { systems: Array<{ name: string; risk: string }> };
 }
 
-const RISK: Record<string, string> = { high: "#EF4444", medium: "#F97316", low: "#2EB67D" };
+const RISK_COLOR: Record<string, string> = { high: "var(--red)", medium: "var(--orange)", low: "var(--green)" };
 
 export default function ImpactNode({ data }: Props) {
   return (
-    <div
-      className="rounded-[10px] px-3.5 py-3 w-[220px] border cursor-grab active:cursor-grabbing"
-      style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
-    >
-      <Handle type="target" position={Position.Left} className="!w-[7px] !h-[7px] !bg-[var(--accent)] !border-[2px] !border-[var(--bg)]" />
-      <div className="text-[12px] font-medium mb-2" style={{ color: "var(--text-secondary)" }}>
-        Impact Graph
+    <div className="node-card px-3.5 py-3 w-[210px] cursor-grab active:cursor-grabbing">
+      <Handle type="target" position={Position.Left} className="!w-[6px] !h-[6px] !rounded-full !bg-[var(--orange)] !border-none" />
+      <div className="text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--red)" }}>
+        Impact
       </div>
-      <div className="space-y-[5px]">
+      <div className="space-y-[4px]">
         {data.systems.map((s) => (
           <div key={s.name} className="flex items-center gap-2">
-            <span className="w-[5px] h-[5px] rounded-full shrink-0" style={{ background: RISK[s.risk] || RISK.low }} />
+            <span className="w-[4px] h-[4px] rounded-full shrink-0" style={{ background: RISK_COLOR[s.risk], boxShadow: `0 0 4px ${RISK_COLOR[s.risk]}` }} />
             <span className="text-[11px]" style={{ color: "var(--text)" }}>{s.name}</span>
           </div>
         ))}
       </div>
-      <Handle type="source" position={Position.Right} className="!w-[7px] !h-[7px] !bg-[var(--accent)] !border-[2px] !border-[var(--bg)]" />
+      <Handle type="source" position={Position.Right} className="!w-[6px] !h-[6px] !rounded-full !bg-[var(--green)] !border-none" />
     </div>
   );
 }

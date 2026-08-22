@@ -1,48 +1,114 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #111113;
-  --bg-above: #191A1F;
-  --bg-card: #1C1D22;
-  --bg-hover: #232429;
-  --border: #2C2D33;
-  --border-subtle: #232429;
-  --text: #EDEDEF;
-  --text-secondary: #8B8D98;
-  --text-tertiary: #62636C;
-  --accent: #7C5CFC;
-  --accent-muted: rgba(124, 92, 252, 0.12);
+  --bg: #0D0D0F;
+  --surface: #161619;
+  --card: #1A1A1F;
+  --border: #2A2A30;
+  --text: #F5F5F7;
+  --text-dim: #9A9AA0;
+  --pink: #FF2D7B;
+  --blue: #2DE2FF;
+  --yellow: #FFE62D;
+  --purple: #B44DFF;
+  --green: #2DFF6D;
+  --red: #FF4D4D;
+  --orange: #FF8A2D;
 }
 
 html, body {
   margin: 0;
-  padding: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
-/* React Flow overrides */
+/* Halftone texture overlay */
+.halftone::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 4px 4px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Chromatic aberration text */
+.chromatic {
+  text-shadow:
+    -2px 0 var(--pink),
+    2px 0 var(--blue);
+}
+
+/* Glitch line */
+.glitch-line {
+  position: relative;
+}
+.glitch-line::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--pink);
+  opacity: 0;
+  animation: glitch-flash 4s ease-in-out infinite;
+}
+@keyframes glitch-flash {
+  0%, 94%, 100% { opacity: 0; transform: translateY(0); }
+  95% { opacity: 0.8; transform: translateY(-2px); }
+  96% { opacity: 0; }
+  97% { opacity: 0.6; transform: translateY(1px); }
+  98% { opacity: 0; }
+}
+
+/* Pulse glow */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 45, 123, 0); }
+  50% { box-shadow: 0 0 20px 2px rgba(255, 45, 123, 0.15); }
+}
+
+/* Node card base */
+.node-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.node-card:hover {
+  border-color: var(--pink);
+  box-shadow: 0 0 16px rgba(255, 45, 123, 0.1);
+}
+
+/* React Flow */
 .react-flow__background { background: var(--bg) !important; }
 .react-flow__controls {
-  background: var(--bg-card) !important;
+  background: var(--card) !important;
   border: 1px solid var(--border) !important;
-  border-radius: 10px !important;
+  border-radius: 6px !important;
   overflow: hidden;
 }
 .react-flow__controls-button {
-  background: var(--bg-card) !important;
+  background: var(--card) !important;
   border: none !important;
   border-bottom: 1px solid var(--border) !important;
-  color: var(--text-tertiary) !important;
-  width: 28px !important;
-  height: 28px !important;
+  color: var(--text-dim) !important;
 }
 .react-flow__controls-button:hover {
-  background: var(--bg-hover) !important;
+  background: var(--surface) !important;
   color: var(--text) !important;
 }
 .react-flow__controls-button:last-child { border-bottom: none !important; }
-.react-flow__controls-button svg { width: 12px !important; height: 12px !important; }
+
+/* Grain overlay for the whole page */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.015'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+}
