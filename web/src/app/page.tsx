@@ -36,7 +36,7 @@ export default function Home() {
           </div>
 
           {/* Content area */}
-          <div className="relative flex" style={{ minHeight: "520px" }}>
+          <div className="relative flex" style={{ minHeight: "520px", backgroundImage: "radial-gradient(circle, #2A2A30 1px, transparent 1px)", backgroundSize: "20px 20px" }}>
             <div className={`flex-1 transition-all duration-300 ${selectedStep ? "pr-[400px]" : ""}`}>
               <Pipeline onSelectStep={setSelectedStep} selectedStepId={selectedStep?.id || null} />
             </div>

@@ -25,12 +25,6 @@ html, body {
   overflow-x: hidden;
 }
 
-/* Dotted page background */
-body {
-  background-image: radial-gradient(circle, #D1D5DB 1px, transparent 1px);
-  background-size: 24px 24px;
-}
-
 /* Halftone texture overlay */
 .halftone::before {
   content: '';
