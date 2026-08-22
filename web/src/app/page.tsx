@@ -1,13 +1,15 @@
 "use client";
 
+import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
-import Playground from "@/components/playground/Playground";
+import Canvas from "@/components/Canvas";
 
 export default function Home() {
   return (
-    <main>
+    <>
+      <Navbar />
       <Hero />
-      <Playground />
-    </main>
+      <Canvas />
+    </>
   );
 }

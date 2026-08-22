@@ -1,83 +1,48 @@
 @import "tailwindcss";
 
 :root {
-  /* Light hero */
-  --hero-bg: #FAFBFC;
-  --hero-text: #0F172A;
-  --hero-muted: #64748B;
-  --hero-border: #E2E8F0;
-
-  /* Canvas (dark workspace) */
-  --canvas-bg: #0C0F1A;
-  --canvas-surface: #141926;
-  --canvas-elevated: #1C2233;
-  --canvas-border: #252D3F;
-  --canvas-text: #E2E8F0;
-  --canvas-muted: #64748B;
-
-  /* Accents */
-  --accent: #6366F1;
-  --accent-light: #818CF8;
-  --accent-glow: rgba(99, 102, 241, 0.25);
-  --cyan: #06B6D4;
-  --emerald: #10B981;
-  --amber: #F59E0B;
-  --rose: #F43F5E;
-  --violet: #8B5CF6;
-
-  /* Severity */
-  --critical: #EF4444;
-  --high: #F97316;
-  --medium: #EAB308;
-  --low: #22C55E;
+  --bg: #111113;
+  --bg-above: #191A1F;
+  --bg-card: #1C1D22;
+  --bg-hover: #232429;
+  --border: #2C2D33;
+  --border-subtle: #232429;
+  --text: #EDEDEF;
+  --text-secondary: #8B8D98;
+  --text-tertiary: #62636C;
+  --accent: #7C5CFC;
+  --accent-muted: rgba(124, 92, 252, 0.12);
 }
 
-* {
-  box-sizing: border-box;
-}
-
-body {
+html, body {
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* React Flow */
-.react-flow__background {
-  background: var(--canvas-bg) !important;
-}
-
+/* React Flow overrides */
+.react-flow__background { background: var(--bg) !important; }
 .react-flow__controls {
-  border-radius: 12px !important;
-  border: 1px solid var(--canvas-border) !important;
-  background: var(--canvas-surface) !important;
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 10px !important;
   overflow: hidden;
 }
-
 .react-flow__controls-button {
-  background: var(--canvas-elevated) !important;
+  background: var(--bg-card) !important;
   border: none !important;
-  border-bottom: 1px solid var(--canvas-border) !important;
-  color: var(--canvas-muted) !important;
-  width: 32px !important;
-  height: 32px !important;
+  border-bottom: 1px solid var(--border) !important;
+  color: var(--text-tertiary) !important;
+  width: 28px !important;
+  height: 28px !important;
 }
-
 .react-flow__controls-button:hover {
-  background: var(--canvas-border) !important;
-  color: var(--canvas-text) !important;
+  background: var(--bg-hover) !important;
+  color: var(--text) !important;
 }
-
-.react-flow__controls-button:last-child {
-  border-bottom: none !important;
-}
-
-/* Animated edges */
-@keyframes dash-flow {
-  to { stroke-dashoffset: -20; }
-}
-
-.animated-edge {
-  stroke-dasharray: 5 5;
-  animation: dash-flow 1s linear infinite;
-}
+.react-flow__controls-button:last-child { border-bottom: none !important; }
+.react-flow__controls-button svg { width: 12px !important; height: 12px !important; }

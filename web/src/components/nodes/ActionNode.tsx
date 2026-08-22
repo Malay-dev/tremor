@@ -1,41 +1,36 @@
 "use client";
 
 import { Handle, Position } from "@xyflow/react";
-import { Bell, CheckCircle2, Clock, MessageSquare, Send } from "lucide-react";
+import SlackLogo from "../icons/SlackLogo";
+import TelegramLogo from "../icons/TelegramLogo";
 
 interface Props {
-  data: {
-    actions: Array<{ label: string; type: string; status: string }>;
-  };
+  data: { actions: Array<{ label: string; type: string; sent: boolean }> };
 }
 
-const ICONS: Record<string, typeof Bell> = {
-  slack: MessageSquare,
-  telegram: Send,
-  webhook: Bell,
-  email: Bell,
+const LOGOS: Record<string, React.ComponentType<{ size?: number }>> = {
+  slack: SlackLogo,
+  telegram: TelegramLogo,
 };
 
 export default function ActionNode({ data }: Props) {
   return (
-    <div className="rounded-xl px-4 py-3.5 min-w-[180px] border cursor-grab active:cursor-grabbing"
-      style={{ background: "var(--canvas-surface)", borderColor: "var(--canvas-border)" }}>
-      <Handle type="target" position={Position.Left} className="!w-2.5 !h-2.5 !bg-emerald-500 !border-2 !border-[var(--canvas-surface)]" />
-
-      <div className="flex items-center gap-2 mb-2.5">
-        <Bell size={13} style={{ color: "var(--emerald)" }} />
-        <span className="text-[12px] font-medium" style={{ color: "var(--canvas-text)" }}>Actions</span>
+    <div
+      className="rounded-[10px] px-3.5 py-3 w-[180px] border cursor-grab active:cursor-grabbing"
+      style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
+    >
+      <Handle type="target" position={Position.Left} className="!w-[7px] !h-[7px] !bg-[var(--accent)] !border-[2px] !border-[var(--bg)]" />
+      <div className="text-[12px] font-medium mb-2" style={{ color: "var(--text-secondary)" }}>
+        Notify
       </div>
-
-      <div className="space-y-1.5">
-        {data.actions.map((action) => {
-          const Icon = ICONS[action.type] || Bell;
+      <div className="space-y-2">
+        {data.actions.map((a) => {
+          const Logo = LOGOS[a.type];
           return (
-            <div key={action.label} className="flex items-center gap-2 text-[11px]" style={{ color: "var(--canvas-muted)" }}>
-              <Icon size={11} />
-              <span className="flex-1">{action.label}</span>
-              {action.status === "sent" && <CheckCircle2 size={11} style={{ color: "var(--emerald)" }} />}
-              {action.status === "pending" && <Clock size={11} style={{ color: "var(--amber)" }} />}
+            <div key={a.label} className="flex items-center gap-2">
+              {Logo ? <Logo size={16} /> : <span className="w-4 h-4 rounded bg-[var(--bg-hover)]" />}
+              <span className="text-[12px] flex-1" style={{ color: "var(--text)" }}>{a.label}</span>
+              {a.sent && <span className="text-[10px]" style={{ color: "#2EB67D" }}>Sent</span>}
             </div>
           );
         })}
