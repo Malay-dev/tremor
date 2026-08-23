@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import tremor.adapters  # noqa: F401 — registers adapters on import
 from tremor.adapters.router import router as adapters_router
+from tremor.demo.router import router as demo_router
 from tremor.graph.router import router as graph_router
 from tremor.ingestion.collector import router as collector_router
 from tremor.ingestion.gateway import router as ingestion_router
@@ -31,6 +32,7 @@ app.include_router(collector_router)
 app.include_router(graph_router)
 app.include_router(adapters_router)
 app.include_router(ws_router)
+app.include_router(demo_router)
 
 @app.get("/health")
 async def health():
