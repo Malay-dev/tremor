@@ -14,11 +14,11 @@ export default function JiraNode({ data }: Props) {
             <path d="M12.005 2L2 12.005l10.005 10.005L22.01 12.005 12.005 2zm-.53 4.243l5.292 5.292-5.292 5.292-5.292-5.292 5.292-5.292z" fill="#0052CC"/>
           </svg>
           <div className="flex-1">
-            <div className="text-[12px] font-medium" style={{ color: "var(--text)" }}>Jira</div>
-            <div className="text-[10px]" style={{ color: "var(--text-dim)" }}>ENG-4521</div>
+            <div className="text-md font-medium" style={{ color: "var(--text)" }}>Jira</div>
+            <div className="text-sm" style={{ color: "var(--text-dim)" }}>ENG-4521</div>
           </div>
-          {data.sent && <span className="text-[10px] font-semibold" style={{ color: "#10B981" }}>✓ Sent</span>}
-          {!data.sent && <span className="text-[10px]" style={{ color: "var(--text-dim)" }}>Idle</span>}
+          {data.sent && <span className="text-sm font-semibold" style={{ color: "#10B981" }}>✓ Sent</span>}
+          {!data.sent && <span className="text-sm" style={{ color: "var(--text-dim)" }}>Idle</span>}
         </div>
       </div>
     </NodeShell>

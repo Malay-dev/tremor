@@ -1,6 +1,7 @@
 "use client";
 
 import type { VersionInfo, ScrapingData, AnalysisData, AlertsData } from "@/app/page";
+import { PIPELINES } from "./pipelines";
 
 interface Props {
   nodeId: string | null;
@@ -11,6 +12,7 @@ interface Props {
   onGenerateAlerts: () => void;
   onSendNotifications: () => void;
   onViewGraph: () => void;
+  pipelineId: string;
   discovering: boolean;
   versions: VersionInfo[];
   scrapingData: ScrapingData;
@@ -18,10 +20,10 @@ interface Props {
   alertsData: AlertsData;
 }
 
-export default function Sidebar({ nodeId, onClose, onDiscover, onStartScraping, onInitiateAnalysis, onGenerateAlerts, onSendNotifications, onViewGraph, discovering, versions, scrapingData, analysisData, alertsData }: Props) {
+export default function Sidebar({ nodeId, onClose, onDiscover, onStartScraping, onInitiateAnalysis, onGenerateAlerts, onSendNotifications, onViewGraph, pipelineId, discovering, versions, scrapingData, analysisData, alertsData }: Props) {
   if (!nodeId) return null;
 
-  if (nodeId === "sf") return <SourcePanel onClose={onClose} onDiscover={onDiscover} discovering={discovering} versions={versions} />;
+  if (nodeId === "sf") return <SourcePanel onClose={onClose} onDiscover={onDiscover} discovering={discovering} versions={versions} pipelineId={pipelineId} />;
   if (nodeId === "ver") return <VersionPanel onClose={onClose} versions={versions} onStartScraping={onStartScraping} scrapingData={scrapingData} />;
   if (nodeId === "bd") return <BrightDataPanel onClose={onClose} scrapingData={scrapingData} onInitiateAnalysis={onInitiateAnalysis} />;
   if (nodeId === "eng") return <TremorPanel onClose={onClose} analysisData={analysisData} onGenerateAlerts={onGenerateAlerts} />;
@@ -32,7 +34,8 @@ export default function Sidebar({ nodeId, onClose, onDiscover, onStartScraping, 
 
 // ─── Source Configuration Panel (Salesforce node) ───────────────────────────
 
-function SourcePanel({ onClose, onDiscover, discovering, versions }: { onClose: () => void; onDiscover: () => void; discovering: boolean; versions: VersionInfo[] }) {
+function SourcePanel({ onClose, onDiscover, discovering, versions, pipelineId }: { onClose: () => void; onDiscover: () => void; discovering: boolean; versions: VersionInfo[]; pipelineId: string }) {
+  const pipeline = PIPELINES[pipelineId];
   return (
     <div className="w-[340px] h-full max-h-[680px] border-l overflow-y-auto" style={{ background: "#FAFAFA", borderColor: "#E5E5E5" }}>
       <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: "#E5E5E5" }}>
@@ -45,7 +48,8 @@ function SourcePanel({ onClose, onDiscover, discovering, versions }: { onClose: 
           <label className="block text-[12px] font-medium mb-1.5" style={{ color: "#64748B" }}>Base URL</label>
           <input
             type="text"
-            defaultValue="https://developer.salesforce.com/docs/marketing/pardot/guide/overview"
+            defaultValue={pipeline.sourceUrl}
+            key={pipelineId}
             className="w-full px-3 py-2.5 text-[13px] rounded-lg border outline-none focus:border-[#3D7FFC]"
             style={{ background: "white", borderColor: "#E5E5E5", color: "#0F172A" }}
           />
@@ -58,7 +62,8 @@ function SourcePanel({ onClose, onDiscover, discovering, versions }: { onClose: 
           <label className="block text-[12px] font-medium mb-1.5" style={{ color: "#64748B" }}>Application</label>
           <input
             type="text"
-            defaultValue="Salesforce Pardot"
+            defaultValue={pipeline.application}
+            key={pipelineId + "-app"}
             className="w-full px-3 py-2.5 text-[13px] rounded-lg border outline-none focus:border-[#3D7FFC]"
             style={{ background: "white", borderColor: "#E5E5E5", color: "#0F172A" }}
           />

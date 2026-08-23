@@ -232,6 +232,7 @@ export default function Home() {
               onGenerateAlerts={handleGenerateAlerts}
               onSendNotifications={handleSendNotifications}
               onViewGraph={handleViewGraph}
+              pipelineId={pipelineId}
               discovering={discovering}
               versions={versions}
               scrapingData={scrapingData}
