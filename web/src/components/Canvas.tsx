@@ -51,9 +51,12 @@ const initialEdges: Edge[] = [
   { id: "ver-bd", source: "ver", target: "bd", sourceHandle: "right", targetHandle: "left-t", animated: true, style: { stroke: "#444", strokeWidth: 3 }, markerEnd: { type: MarkerType.ArrowClosed, color: "#666", width: 14, height: 14 }, type: "smoothstep" },
   { id: "bd-eng", source: "bd", target: "eng", sourceHandle: "right", targetHandle: "left-t", animated: true, style: { stroke: "#444", strokeWidth: 3 }, markerEnd: { type: MarkerType.ArrowClosed, color: "#666", width: 14, height: 14 }, type: "smoothstep" },
   { id: "eng-alerts", source: "eng", target: "alerts", sourceHandle: "right", targetHandle: "left-t", animated: true, style: { stroke: "#444", strokeWidth: 3 }, markerEnd: { type: MarkerType.ArrowClosed, color: "#666", width: 14, height: 14 }, type: "smoothstep" },
+  { id: "alerts-slack", source: "alerts", target: "slack", sourceHandle: "right", targetHandle: "left-t", animated: true, style: { stroke: "#444", strokeWidth: 3 }, markerEnd: { type: MarkerType.ArrowClosed, color: "#666", width: 14, height: 14 }, type: "smoothstep" },
+  { id: "alerts-tg", source: "alerts", target: "tg", sourceHandle: "right", targetHandle: "left-t", animated: true, style: { stroke: "#444", strokeWidth: 3 }, markerEnd: { type: MarkerType.ArrowClosed, color: "#666", width: 14, height: 14 }, type: "smoothstep" },
+  { id: "alerts-wh", source: "alerts", target: "wh", sourceHandle: "right", targetHandle: "left-t", animated: true, style: { stroke: "#444", strokeWidth: 3 }, markerEnd: { type: MarkerType.ArrowClosed, color: "#666", width: 14, height: 14 }, type: "smoothstep" },
 ];
 
-export default function Canvas({ onNodeClick, versions, discovering, scrapingData, analysisData, alertsData }: { onNodeClick?: (id: string) => void; versions?: import("@/app/page").VersionInfo[]; discovering?: boolean; scrapingData?: import("@/app/page").ScrapingData; analysisData?: import("@/app/page").AnalysisData; alertsData?: import("@/app/page").AlertsData }) {
+export default function Canvas({ onNodeClick, versions, discovering, scrapingData, analysisData, alertsData, notificationsSent }: { onNodeClick?: (id: string) => void; versions?: import("@/app/page").VersionInfo[]; discovering?: boolean; scrapingData?: import("@/app/page").ScrapingData; analysisData?: import("@/app/page").AnalysisData; alertsData?: import("@/app/page").AlertsData; notificationsSent?: boolean }) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
@@ -65,10 +68,11 @@ export default function Canvas({ onNodeClick, versions, discovering, scrapingDat
         if (n.id === "bd") return { ...n, data: { scrapingData: scrapingData || { active: false, scraping: false } } };
         if (n.id === "eng") return { ...n, data: { analysisData: analysisData || { active: false, analyzing: false, events: [] } } };
         if (n.id === "alerts") return { ...n, data: { alertsData: alertsData || { active: false, generating: false, alerts: [] } } };
+        if (n.id === "slack" || n.id === "tg" || n.id === "wh") return { ...n, data: { sent: notificationsSent || false } };
         return n;
       })
     );
-  }, [versions, discovering, scrapingData, analysisData, alertsData, setNodes]);
+  }, [versions, discovering, scrapingData, analysisData, alertsData, notificationsSent, setNodes]);
 
   const onConnect = useCallback(
     (params: Connection) => {

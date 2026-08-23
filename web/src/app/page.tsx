@@ -137,6 +137,7 @@ export default function Home() {
               scrapingData={scrapingData}
               analysisData={analysisData}
               alertsData={alertsData}
+              notificationsSent={notificationsSent}
             />
           </div>
 
