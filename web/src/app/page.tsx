@@ -8,6 +8,7 @@ import GraphModal from "@/components/GraphModal";
 import Toast, { type ToastItem } from "@/components/Toast";
 import SlackLogo from "@/components/logos/SlackLogo";
 import TelegramLogo from "@/components/logos/TelegramLogo";
+import WebhooksIcon from "@/components/icons/WebhooksIcon";
 
 export interface VersionInfo {
   file: string;
@@ -145,7 +146,7 @@ export default function Home() {
         channel: "Webhook",
         target: "ServiceNow",
         message: "IGA-2847 created: \"Update Salesforce connector auth configuration\" — Priority: Critical, Assignee: IAM Engineering, Effort: 1 hour",
-        icon: <span className="text-[18px]">🔗</span>,
+        icon: <WebhooksIcon size={22} />,
       }]);
     }, 2000);
     // Keep toasts visible longer
@@ -162,10 +163,36 @@ export default function Home() {
     <>
       <Hero />
       <section id="playground" className="px-6 md:px-12 pb-20">
-        <div className="max-w-[1440px] mx-auto rounded-2xl border overflow-hidden flex" style={{ background: "#FFFFFF", borderColor: "#E5E5E5", boxShadow: "0 4px 24px rgba(0,0,0,0.06)" }}>
+        <div className="max-w-[1440px] mx-auto rounded-2xl border overflow-hidden flex flex-col" style={{ background: "#FFFFFF", borderColor: "#E5E5E5", boxShadow: "0 4px 24px rgba(0,0,0,0.06)" }}>
+          {/* Top toolbar */}
+          <div className="flex items-center px-4 py-2.5 border-b" style={{ borderColor: "#E5E5E5" }}>
+            <div className="flex items-center gap-3">
+              <span className="text-[12px] font-medium" style={{ color: "#94A3B8" }}>Pipeline</span>
+              <select
+                className="px-3 py-1.5 rounded-md text-[12px] font-medium border outline-none cursor-pointer"
+                style={{ background: "white", color: "#0F172A", borderColor: "#E5E5E5" }}
+                defaultValue="iga"
+              >
+                <option value="iga">IGA — Salesforce</option>
+                <option value="rfp">RFP — Government Portal</option>
+                <option value="api">API — Stripe Docs</option>
+              </select>
+            </div>
+            <div className="ml-auto flex items-center gap-3">
+              <span className="flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-md" style={{ background: "#ECFDF5", color: "#065F46", border: "1px solid #A7F3D0" }}>
+                <span className="w-[5px] h-[5px] rounded-full bg-[#10B981] animate-pulse" />
+                Live
+              </span>
+              <span className="text-[11px] px-2.5 py-1 rounded-md" style={{ background: "#F1F1F5", color: "#64748B" }}>
+                {analysisData.events.length > 0 ? `${analysisData.events.length} events` : "0 events"}
+              </span>
+            </div>
+          </div>
+
           {/* Canvas */}
-          <div className="flex-1" style={{ height: "680px" }}>
-            <Canvas
+          <div className="flex flex-1">
+            <div className="flex-1" style={{ height: "640px" }}>
+              <Canvas
               onNodeClick={(id) => setSelectedNode(id)}
               versions={versions}
               discovering={discovering}
@@ -194,6 +221,7 @@ export default function Home() {
               alertsData={alertsData}
             />
           )}
+          </div>
         </div>
       </section>
 
@@ -201,7 +229,7 @@ export default function Home() {
       <GraphModal open={graphOpen} onClose={() => setGraphOpen(false)} />
 
       {/* Toasts */}
-      <Toast toasts={toasts} />
+      <Toast toasts={toasts} onDismiss={(id) => setToasts((t) => t.filter((x) => x.id !== id))} />
     </>
   );
 }

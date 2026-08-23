@@ -8,7 +8,7 @@ interface Props {
 export default function SlackNode({ data }: Props) {
   return (
     <NodeShell>
-      <div className="w-[200px] rounded-xl border p-4 cursor-grab active:cursor-grabbing transition-all hover:border-[#555]" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
+      <div className="w-[250px] rounded-xl border p-4 cursor-grab active:cursor-grabbing transition-all hover:border-[#555]" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
         <div className="flex items-center gap-2.5">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <path d="M5.04 15.24a2.52 2.52 0 1 1-2.52-2.52h2.52v2.52zm1.26 0a2.52 2.52 0 1 1 5.04 0v6.3a2.52 2.52 0 1 1-5.04 0v-6.3z" fill="#E01E5A"/>
