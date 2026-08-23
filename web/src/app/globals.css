@@ -1,19 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #0D0D0F;
-  --surface: #161619;
-  --card: #1A1A1F;
-  --border: #2A2A30;
-  --text: #F5F5F7;
-  --text-dim: #9A9AA0;
-  --pink: #FF2D7B;
-  --blue: #2DE2FF;
-  --yellow: #FFE62D;
-  --purple: #B44DFF;
-  --green: #2DFF6D;
-  --red: #FF4D4D;
-  --orange: #FF8A2D;
+  --bg: #000000;
+  --surface: #0A0A0A;
+  --card: #111111;
+  --border: #222222;
+  --text: #FFFFFF;
+  --text-dim: #888888;
+  --pink: #FFFFFF;
+  --blue: #FFFFFF;
+  --yellow: #FFFFFF;
+  --purple: #FFFFFF;
+  --green: #FFFFFF;
+  --red: #FFFFFF;
+  --orange: #FFFFFF;
 }
 
 html, body {
@@ -85,6 +85,19 @@ html, body {
 
 /* React Flow */
 .react-flow__background { background: var(--bg) !important; }
+
+/* Animated edge — packet style */
+.react-flow__edge.animated path {
+  stroke-dasharray: 8 12 !important;
+  animation: packet-flow 1s linear infinite !important;
+}
+
+@keyframes packet-flow {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
 .react-flow__controls {
   background: var(--card) !important;
   border: 1px solid var(--border) !important;

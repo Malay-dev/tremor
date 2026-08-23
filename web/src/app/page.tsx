@@ -1,38 +1,84 @@
 "use client";
 
+import { useState } from "react";
 import Hero from "@/components/Hero";
+import Canvas from "@/components/Canvas";
+import Sidebar from "@/components/Sidebar";
+
+export interface VersionInfo {
+  file: string;
+  status: "old" | "previous" | "new";
+}
+
+export interface ScrapingData {
+  active: boolean;
+  scraping: boolean;
+}
 
 export default function Home() {
+  const [selectedNode, setSelectedNode] = useState<string | null>(null);
+  const [versions, setVersions] = useState<VersionInfo[]>([]);
+  const [discovering, setDiscovering] = useState(false);
+  const [scrapingData, setScrapingData] = useState<ScrapingData>({ active: false, scraping: false });
+
+  const handleDiscover = () => {
+    setDiscovering(true);
+    setVersions([]);
+
+    setTimeout(() => {
+      setVersions([{ file: "accounts-v3.html", status: "old" }]);
+    }, 600);
+    setTimeout(() => {
+      setVersions([
+        { file: "accounts-v3.html", status: "old" },
+        { file: "accounts-v4.html", status: "previous" },
+      ]);
+    }, 1200);
+    setTimeout(() => {
+      setVersions([
+        { file: "accounts-v3.html", status: "old" },
+        { file: "accounts-v4.html", status: "previous" },
+        { file: "account-v5.html", status: "new" },
+      ]);
+      setDiscovering(false);
+    }, 1800);
+  };
+
+  const handleStartScraping = () => {
+    setScrapingData({ active: false, scraping: true });
+    // Simulate scraping completing
+    setTimeout(() => {
+      setScrapingData({ active: true, scraping: false });
+    }, 2000);
+  };
+
   return (
     <>
       <Hero />
       <section id="playground" className="px-6 md:px-12 pb-20">
-        {/* Embedded window frame */}
-        <div className="max-w-[1200px] mx-auto rounded-xl border overflow-hidden" style={{ background: "var(--surface)", borderColor: "var(--border)", boxShadow: "0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px var(--border)" }}>
-          {/* Title bar */}
-          <div className="flex items-center px-4 py-2.5 border-b" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
-            <div className="flex items-center gap-[6px]">
-              <span className="w-[10px] h-[10px] rounded-full bg-[#FF5F57]" />
-              <span className="w-[10px] h-[10px] rounded-full bg-[#FEBC2E]" />
-              <span className="w-[10px] h-[10px] rounded-full bg-[#28C840]" />
-            </div>
-            <div className="ml-4 flex items-center gap-2 px-3 py-1 rounded-md text-[11px] font-medium" style={{ background: "var(--surface)", color: "var(--text-dim)" }}>
-              <span style={{ color: "var(--pink)" }}>⚡</span>
-              IGA Pipeline — Salesforce
-            </div>
-            <div className="ml-auto flex items-center gap-2 text-[10px]" style={{ color: "var(--text-dim)" }}>
-              <span className="w-[5px] h-[5px] rounded-full bg-[var(--green)]" style={{ boxShadow: "0 0 4px var(--green)" }} />
-              Pipeline Active
-            </div>
+        <div className="max-w-[1440px] mx-auto rounded-2xl border overflow-hidden flex" style={{ background: "#FFFFFF", borderColor: "#E5E5E5", boxShadow: "0 4px 24px rgba(0,0,0,0.06)" }}>
+          {/* Canvas */}
+          <div className="flex-1" style={{ height: "680px" }}>
+            <Canvas
+              onNodeClick={(id) => setSelectedNode(id)}
+              versions={versions}
+              discovering={discovering}
+              scrapingData={scrapingData}
+            />
           </div>
 
-          {/* Content area — dotted background */}
-          <div className="relative" style={{ minHeight: "520px", backgroundImage: "radial-gradient(circle, #3A3A42 1px, transparent 1px)", backgroundSize: "20px 20px" }}>
-            {/* Pipeline content will go here */}
-            <div className="flex items-center justify-center h-full min-h-[520px]">
-              <p className="text-[13px]" style={{ color: "var(--text-dim)" }}>Pipeline modules coming here</p>
-            </div>
-          </div>
+          {/* Sidebar */}
+          {(selectedNode === "sf" || selectedNode === "ver" || selectedNode === "bd") && (
+            <Sidebar
+              nodeId={selectedNode}
+              onClose={() => setSelectedNode(null)}
+              onDiscover={handleDiscover}
+              onStartScraping={handleStartScraping}
+              discovering={discovering}
+              versions={versions}
+              scrapingData={scrapingData}
+            />
+          )}
         </div>
       </section>
     </>
