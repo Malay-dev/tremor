@@ -12,6 +12,7 @@
 
 <p align="center">
   <a href="https://tremor-seven.vercel.app/">Playground</a> •
+  <a href="https://youtu.be/fZThAj4umQ0">Demo Video</a> •
   <a href="#how-it-works">How It Works</a> •
   <a href="#example">Example</a> •
   <a href="#quick-start">Quick Start</a> •
