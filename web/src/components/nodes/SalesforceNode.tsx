@@ -1,6 +1,6 @@
 "use client";
 import NodeShell from "./NodeShell";
-import SalesforceLogo from "../icons/SalesforceLogo";
+import SalesforceLogo from "../logos/SalesforceLogo";
 
 export default function SalesforceNode() {
   return (

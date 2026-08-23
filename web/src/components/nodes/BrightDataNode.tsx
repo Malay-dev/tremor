@@ -1,6 +1,6 @@
 "use client";
 import NodeShell from "./NodeShell";
-import BrightDataLogo from "../icons/BrightDataLogo";
+import BrightDataLogo from "../logos/BrightDataLogo";
 
 interface Props {
   data: { scrapingData?: { active: boolean; scraping: boolean } };

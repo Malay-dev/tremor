@@ -1,4 +1,5 @@
 "use client";
+import TremorLogo from "./logos/TremorLogo";
 
 export default function Hero() {
   return (

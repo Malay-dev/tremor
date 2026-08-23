@@ -1,32 +1,72 @@
 "use client";
 import NodeShell from "./NodeShell";
+import AlertIcon from "../icons/AlertIcon";
 
-export default function AlertsNode() {
+const SEV_COLORS: Record<string, string> = {
+  CRITICAL: "#EF4444",
+  HIGH: "#F97316",
+  MEDIUM: "#EAB308",
+  LOW: "#22C55E",
+};
+
+interface Props {
+  data: { alertsData?: { active: boolean; generating: boolean; alerts: Array<{ title: string; severity: string }> } };
+}
+
+export default function AlertsNode({ data }: Props) {
+  const alertsData = data.alertsData || { active: false, generating: false, alerts: [] };
+
   return (
     <NodeShell>
-      <div className="w-[260px] rounded-xl border p-4 cursor-grab active:cursor-grabbing transition-all hover:border-[#555]" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
-        <div className="flex items-center gap-2.5 mb-3">
-          <span className="text-[14px]">⚡</span>
-          <div className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-dim)" }}>Alerts</div>
-          <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded" style={{ background: "var(--surface)", color: "var(--text-dim)" }}>IGA</span>
-        </div>
-        <div className="flex items-center gap-3 mb-3">
-          <span className="text-[11px] px-2 py-0.5 rounded" style={{ background: "var(--surface)", color: "var(--text)" }}>1 Critical</span>
-          <span className="text-[11px] px-2 py-0.5 rounded" style={{ background: "var(--surface)", color: "var(--text)" }}>3 High</span>
-        </div>
-        <div className="space-y-2 text-[11px]">
-          <div className="p-2 rounded border" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-            <div className="font-medium" style={{ color: "var(--text)" }}>Auth flow removed</div>
-            <div className="text-[10px] mt-0.5" style={{ color: "var(--text-dim)" }}>Connector auth will fail immediately</div>
-          </div>
-          <div className="p-2 rounded border" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-            <div className="font-medium" style={{ color: "var(--text)" }}>Status field expanded</div>
-            <div className="text-[10px] mt-0.5" style={{ color: "var(--text-dim)" }}>Provisioning rules need update</div>
+      <div className="w-[300px] rounded-xl border p-4 cursor-grab active:cursor-grabbing transition-all hover:border-[#555]" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
+        {/* Header */}
+        <div className="flex items-center gap-2 mb-3">
+          <AlertIcon size={30}></AlertIcon>
+          <div>
+            <div className="text-md font-semibold" style={{ color: "var(--text)" }}>Alerts</div>
           </div>
         </div>
-        <div className="mt-3 pt-3 border-t" style={{ borderColor: "var(--border)" }}>
-          <div className="text-[10px]" style={{ color: "var(--text-dim)" }}>Remediation: Update connector auth to OAuth 2.0</div>
-        </div>
+
+        {!alertsData.active && !alertsData.generating && (
+          <div className="text-base text-center py-3" style={{ color: "var(--text-dim)" }}>
+            Waiting for analysis...
+          </div>
+        )}
+
+        {alertsData.generating && (
+          <div className="text-base text-center py-3" style={{ color: "#F59E0B" }}>
+            Generating alerts...
+          </div>
+        )}
+
+        {alertsData.active && (
+          <>
+            {/* Severity counts */}
+            <div className="flex items-center gap-2 mb-3">
+              {Object.entries(
+                alertsData.alerts.reduce((acc, a) => { acc[a.severity] = (acc[a.severity] || 0) + 1; return acc; }, {} as Record<string, number>)
+              ).map(([sev, count]) => (
+                <span key={sev} className="flex items-center gap-1 text-sm px-2 py-0.5 rounded" style={{ background: (SEV_COLORS[sev] || "#888") + "15", color: SEV_COLORS[sev] || "#888" }}>
+                  <span className="w-[4px] h-[4px] rounded-full" style={{ background: SEV_COLORS[sev] }} />
+                  {count} {sev.toLowerCase()}
+                </span>
+              ))}
+            </div>
+
+            {/* Alert list */}
+            <div className="space-y-1.5">
+              {alertsData.alerts.slice(0, 3).map((alert) => (
+                <div key={alert.title} className="flex items-center gap-2 px-2 py-1.5 rounded" style={{ background: "var(--surface)" }}>
+                  <span className="w-[5px] h-[5px] rounded-full shrink-0" style={{ background: SEV_COLORS[alert.severity] || "#888" }} />
+                  <span className="text-sm truncate" style={{ color: "var(--text)" }}>{alert.title}</span>
+                </div>
+              ))}
+              {alertsData.alerts.length > 3 && (
+                <div className="text-sm text-center" style={{ color: "var(--text-dim)" }}>+{alertsData.alerts.length - 3} more</div>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </NodeShell>
   );
