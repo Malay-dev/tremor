@@ -1,273 +1,128 @@
-# Tremor
+<h1 align="center">Tremor</h1>
 
-**Change intelligence for enterprise integrations.**
+<p align="center"><strong>Change intelligence for enterprise integrations.</strong></p>
 
-Tremor monitors public web artifacts — API documentation, changelogs, schemas — and detects semantic changes that predict which enterprise integrations will break before they do.
+<p align="center">
+  <img src="https://img.shields.io/badge/python-3.14+-blue?style=flat-square" alt="Python" />
+  <img src="https://img.shields.io/badge/LLM-Gemini_2.5_Flash-orange?style=flat-square" alt="Gemini" />
+  <img src="https://img.shields.io/badge/graph-Neo4j_5-green?style=flat-square" alt="Neo4j" />
+  <img src="https://img.shields.io/badge/scraping-Bright_Data-red?style=flat-square" alt="Bright Data" />
+  <img src="https://img.shields.io/badge/framework-FastAPI-teal?style=flat-square" alt="FastAPI" />
+</p>
 
-Unlike text diffs, Tremor understands *what changed in meaning*: a boolean becoming an enum, a required field appearing, an auth flow being removed. It then propagates that change through a typed entity graph to identify every downstream system at risk and generates actionable remediation steps.
-
----
-
-## Key Capabilities
-
-- **Semantic Extraction** — LLM-powered structured extraction of entities, endpoints, attributes, and contracts from any document format
-- **17-Type Shift Taxonomy** — Classifies changes by meaning, not syntax (STATE_SPACE_EXPANDED, BREAKING_REMOVAL, DEPRECATION_ANNOUNCED, etc.)
-- **Impact Graph** — Neo4j-backed dependency graph that traces changes from API fields through connectors, provisioning rules, and access decisions to business processes
-- **Severity Scoring** — Automatic risk assessment with confidence levels
-- **Actionable Recommendations** — Specific remediation steps per affected system
-
----
-
-## Architecture
-
-```
-                         ┌──────────────────┐
-                         │   Public Web     │
-                         │  (API docs, etc) │
-                         └────────┬─────────┘
-                                  │
-                    ┌─────────────▼──────────────┐
-                    │    Ingestion Gateway        │
-                    │  Snapshot versioning        │
-                    │  Content deduplication      │
-                    └─────────────┬──────────────┘
-                                  │
-                    ┌─────────────▼──────────────┐
-                    │   Semantic Extraction       │
-                    │   (Gemini 2.5 Flash)        │
-                    │   Entities → Contracts      │
-                    └─────────────┬──────────────┘
-                                  │
-                    ┌─────────────▼──────────────┐
-                    │      Change Engine          │
-                    │   Semantic diff (not text)  │
-                    │   Shift classification      │
-                    │   Severity scoring          │
-                    └─────────────┬──────────────┘
-                                  │
-                    ┌─────────────▼──────────────┐
-                    │      Impact Graph           │
-                    │   (Neo4j)                   │
-                    │   Relationship traversal    │
-                    │   Risk propagation          │
-                    └─────────────┬──────────────┘
-                                  │
-                    ┌─────────────▼──────────────┐
-                    │   Alerts & Recommendations  │
-                    │   Per-system remediation    │
-                    └────────────────────────────┘
-```
+<p align="center">
+  <a href="#how-it-works">How It Works</a> •
+  <a href="#example">Example</a> •
+  <a href="#quick-start">Quick Start</a> •
+  <a href="#api-reference">API</a> •
+  <a href="#project-structure">Structure</a>
+</p>
 
 ---
 
-## Tech Stack
-
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| API | FastAPI | Async REST endpoints |
-| Extraction | Google Gemini 2.5 Flash | Structured entity extraction via LLM |
-| Change Engine | Python | Semantic diff with 17-type taxonomy |
-| Impact Graph | Neo4j 5 | Dependency traversal and risk propagation |
-| Models | Pydantic | Type-safe domain models |
-| Storage | PostgreSQL + S3 | Versioned snapshots (planned) |
-| Acquisition | Bright Data | Self-healing web collectors (planned) |
+Tremor monitors public web artifacts — API docs, changelogs, schemas — and detects **semantic changes** that predict which integrations will break. Unlike text diffs, it understands meaning: a boolean becoming an enum, a required field appearing, an auth flow being removed. It then propagates changes through a typed dependency graph to identify every downstream system at risk.
 
 ---
 
-## Quick Start
+## How It Works
 
-### Prerequisites
+<p align="center">
+  <img src="docs/assets/architecture.svg" alt="Tremor Pipeline Architecture" width="100%" />
+</p>
 
-- Python 3.14+
-- [uv](https://docs.astral.sh/uv/) package manager
-- Docker (for Neo4j)
-- Google AI API key ([get one here](https://aistudio.google.com/apikey))
-
-### Setup
-
-```bash
-# Clone and install
-git clone <repo-url> && cd tremor
-uv sync
-
-# Configure environment
-cp .env.example .env
-# Edit .env — add your GEMINI_API_KEY
-
-# Start Neo4j
-docker compose up -d neo4j
-
-# Run the server
-uv run uvicorn tremor.main:app --reload
-```
-
-The API is available at `http://127.0.0.1:8000`. OpenAPI docs at `/docs`.
+| Stage | What Happens |
+|-------|-------------|
+| **Monitor** | Bright Data's self-healing scrapers collect target pages on schedule |
+| **Collect** | Version discovery detects content changes via hash comparison |
+| **Analyze** | Gemini 2.5 Flash extracts semantic contracts; change engine classifies shifts into 17 types |
+| **Propagate** | Neo4j impact graph traces changes through connectors → rules → decisions → business processes |
+| **Act** | Domain adapters generate remediation; Slack/Telegram/webhook notifications fire |
 
 ---
 
-## API Reference
+## Example
 
-### Ingestion
+Salesforce releases API v62.0. `User.status` changes from `boolean` to `enum(ACTIVE, INACTIVE, SUSPENDED)`.
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/ingest/webhook` | Receive a document snapshot |
-| `GET` | `/ingest/sources` | List all monitored sources |
-| `GET` | `/ingest/pending` | List snapshot pairs awaiting analysis |
-| `POST` | `/ingest/process` | Run extraction, diffing, and impact analysis |
-| `GET` | `/ingest/events` | List detected change events |
+```
+⚠️  HIGH — STATE_SPACE_EXPANDED
 
-### Impact Graph
+Entity:       User.status
+Before:       BOOLEAN (true/false)
+After:        ENUM (ACTIVE, INACTIVE, SUSPENDED)
+Impact:       Provisioning Connector → Lifecycle Workflow → Employee Offboarding
+Risk Score:   0.85
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/graph/seed` | Seed graph with IGA topology |
-| `GET` | `/graph/topology` | View graph summary |
-| `GET` | `/graph/impact/{event_id}` | Analyze downstream impact of a change |
-| `POST` | `/graph/impact/all` | Run impact analysis on all events |
-
-### System
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/health` | Health check |
+Remediation:
+  1. Update connector attribute mapping — 2-4 hours (IAM Engineering)
+  2. Add SUSPENDED state handling — 1-2 hours
+  3. Update lifecycle workflows — 4 hours
+```
 
 ---
 
-## Usage Example
+## Impact Graph
 
-### 1. Seed the impact graph
+<p align="center">
+  <img src="docs/assets/impact-graph.svg" alt="Impact Propagation" width="90%" />
+</p>
 
-```bash
-curl -X POST http://127.0.0.1:8000/graph/seed
-```
-
-### 2. Send a baseline document snapshot
-
-```bash
-curl -X POST http://127.0.0.1:8000/ingest/webhook \
-  -H "Content-Type: application/json" \
-  -d '{
-    "collector_id": "sf-collector",
-    "source_url": "https://developer.salesforce.com/docs/api/v61",
-    "application": "Salesforce",
-    "document_type": "API_DOC",
-    "version_label": "v61.0",
-    "content": "# User Object\n\n| Field | Type | Required |\n|---|---|---|\n| id | string | yes |\n| status | boolean | yes |\n| email | string | yes |"
-  }'
-```
-
-### 3. Send an updated snapshot (with breaking changes)
-
-```bash
-curl -X POST http://127.0.0.1:8000/ingest/webhook \
-  -H "Content-Type: application/json" \
-  -d '{
-    "collector_id": "sf-collector",
-    "source_url": "https://developer.salesforce.com/docs/api/v61",
-    "application": "Salesforce",
-    "document_type": "API_DOC",
-    "version_label": "v62.0",
-    "content": "# User Object\n\n| Field | Type | Required |\n|---|---|---|\n| id | string | yes |\n| status | enum(ACTIVE,INACTIVE,SUSPENDED) | yes |\n| email | string | no |"
-  }'
-```
-
-### 4. Process and get results
-
-```bash
-curl -X POST http://127.0.0.1:8000/ingest/process
-```
-
-Response:
-
-```json
-{
-  "status": "processed",
-  "pairs_processed": 1,
-  "total_events": 2,
-  "total_impacts": 1,
-  "results": [{
-    "application": "Salesforce",
-    "events_detected": 2,
-    "impacts": [{
-      "entity": "User.status",
-      "affected_systems": ["Account Enable/Disable Decision", "AD Group: Salesforce Users", "Employee Offboarding"],
-      "risk_score": 0.65,
-      "top_recommendation": "UPDATE MAPPINGS: 'User.status' type/values changed. Review transformation logic in attribute mappings."
-    }]
-  }]
-}
-```
+One upstream change → graph traversal reveals every system at risk.
 
 ---
 
 ## Semantic Shift Taxonomy
 
-Tremor classifies every detected change using a 17-type taxonomy:
+17 types of semantic change, classified by meaning — not syntax:
 
 | Category | Shifts |
 |----------|--------|
-| **State Space** | `STATE_SPACE_EXPANDED`, `STATE_SPACE_CONTRACTED` |
-| **Type System** | `TYPE_CHANGED`, `NULLABILITY_CHANGED`, `CARDINALITY_CHANGED` |
-| **Constraints** | `CONSTRAINT_ADDED`, `CONSTRAINT_REMOVED` |
-| **Lifecycle** | `DEPRECATION_ANNOUNCED`, `BREAKING_REMOVAL` |
-| **Behavior** | `BEHAVIOR_INVERSION`, `SCOPE_NARROWED`, `SCOPE_WIDENED` |
-| **Dependencies** | `DEPENDENCY_ADDED`, `DEPENDENCY_REMOVED` |
-| **Governance** | `TEMPORAL_SHIFT`, `AUTHORITY_CHANGED`, `SEMANTIC_RENAME` |
+| State Space | `STATE_SPACE_EXPANDED` · `STATE_SPACE_CONTRACTED` |
+| Type System | `TYPE_CHANGED` · `NULLABILITY_CHANGED` · `CARDINALITY_CHANGED` |
+| Constraints | `CONSTRAINT_ADDED` · `CONSTRAINT_REMOVED` |
+| Lifecycle | `DEPRECATION_ANNOUNCED` · `BREAKING_REMOVAL` |
+| Behavior | `BEHAVIOR_INVERSION` · `SCOPE_NARROWED` · `SCOPE_WIDENED` |
+| Dependencies | `DEPENDENCY_ADDED` · `DEPENDENCY_REMOVED` |
+| Governance | `TEMPORAL_SHIFT` · `AUTHORITY_CHANGED` · `SEMANTIC_RENAME` |
 
 ---
 
-## Impact Graph Model
-
-The graph represents the full dependency chain from external APIs to business processes:
-
-```
-Application
-  └─[EXPOSES]→ API Field
-      └─[MAPS_TO]→ Attribute Mapping
-          └─[TRANSFORMS]→ Transformation
-              └─[DRIVES]→ Provisioning Rule
-                  └─[EVALUATES]→ Access Decision
-                      └─[CONTROLS]→ Entitlement
-                          └─[AFFECTS]→ Business Process
-```
-
-A single upstream change propagates through the graph. Tremor walks every path and aggregates risk across all affected systems.
-
----
-
-## Configuration
-
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `GEMINI_API_KEY` | Yes | — | Google AI API key |
-| `GEMINI_MODEL` | No | `gemini-2.5-flash` | Gemini model for extraction |
-| `NEO4J_URI` | No | `bolt://localhost:7687` | Neo4j connection URI |
-| `NEO4J_USER` | No | `neo4j` | Neo4j username |
-| `NEO4J_PASSWORD` | No | `password` | Neo4j password |
-| `DATABASE_URL` | No | — | PostgreSQL connection (planned) |
-| `BRIGHT_DATA_API_TOKEN` | No | — | Bright Data API token (planned) |
-
----
-
-## Development
+## Quick Start
 
 ```bash
-# Install dependencies
+# Install
+git clone <repo-url> && cd tremor
 uv sync
 
-# Run linter
-uv run ruff check src/
+# Configure
+cp .env.example .env   # Add GEMINI_API_KEY
 
-# Run tests
-uv run pytest
+# Start Neo4j
+docker compose up -d neo4j
 
-# Start services
-docker compose up -d
-
-# Run server with hot reload
+# Run
 uv run uvicorn tremor.main:app --reload
 ```
+
+API at `http://127.0.0.1:8000` — OpenAPI docs at `/docs`.
+
+---
+
+## API Reference
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/ingest/webhook` | Receive a document snapshot |
+| `POST` | `/ingest/process` | Run full pipeline |
+| `GET` | `/ingest/events` | List detected changes |
+| `POST` | `/collect/create` | Create Bright Data scraper |
+| `POST` | `/collect/trigger` | Trigger collection |
+| `POST` | `/collect/heal` | Self-heal broken scraper |
+| `POST` | `/graph/seed` | Seed impact graph topology |
+| `GET` | `/graph/impact/{id}` | Analyze downstream impact |
+| `POST` | `/adapters/analyze/iga` | IGA domain analysis |
+| `POST` | `/adapters/analyze/rfp` | RFP domain analysis |
+| `WS` | `/ws/events` | Real-time event stream |
 
 ---
 
@@ -275,39 +130,53 @@ uv run uvicorn tremor.main:app --reload
 
 ```
 src/tremor/
-├── main.py                 # FastAPI application entry point
+├── main.py                    # FastAPI app entry
 ├── ingestion/
-│   └── gateway.py          # Webhook receiver, snapshot management
+│   ├── gateway.py             # Webhook, dedup, pair queuing
+│   ├── brightdata.py          # Bright Data CLI/API wrapper
+│   └── collector.py           # Collection endpoints
 ├── extraction/
-│   └── extractor.py        # LLM-powered semantic extraction (Gemini)
+│   └── extractor.py           # Gemini Flash extraction + retry
 ├── engine/
-│   ├── differ.py           # Semantic diff engine (17-type taxonomy)
-│   └── pipeline.py         # Orchestrates extraction → diff → impact
+│   ├── differ.py              # Semantic diff (17 types)
+│   └── pipeline.py            # Extract → diff → impact → notify
 ├── graph/
-│   ├── models.py           # Node types, relationship types, impact models
-│   ├── connection.py       # Neo4j driver management
-│   ├── seeder.py           # Sample IGA topology for demo
-│   ├── traversal.py        # Downstream impact traversal + risk scoring
-│   └── router.py           # Graph API endpoints
-├── models/
-│   ├── entities.py         # Entity, Attribute, Endpoint, SemanticContract
-│   ├── event.py            # ChangeEvent, SemanticShift, Severity, ImpactResult
-│   └── sources.py          # Source, Snapshot, SnapshotPair
-└── adapters/               # Domain-specific adapters (planned)
+│   ├── seeder.py              # IGA topology (20 nodes, 18 edges)
+│   └── traversal.py           # Downstream traversal + risk scoring
+├── adapters/
+│   ├── iga.py                 # Identity Governance adapter
+│   └── rfp.py                 # Procurement adapter
+├── notifications/
+│   ├── slack.py               # Slack Block Kit
+│   └── telegram.py            # Telegram Bot API
+└── models/
+    ├── entities.py            # SemanticContract, Entity, Attribute
+    ├── event.py               # ChangeEvent, SemanticShift, Severity
+    └── sources.py             # Source, Snapshot, SnapshotPair
 ```
 
 ---
 
-## Roadmap
+## Built With
 
-- [ ] Bright Data collector integration (self-healing web acquisition)
-- [ ] Persistent storage (PostgreSQL + S3 for snapshots)
-- [ ] IGA domain adapter (SailPoint, Saviynt connector rules)
-- [ ] React dashboard with graph visualization
-- [ ] Slack/email alert notifications
-- [ ] Multi-tenant SaaS deployment
-- [ ] Historical change pattern analysis
-- [ ] Predictive breaking change alerts
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
+  <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/Bright%20Data-3D7FFC?style=for-the-badge&logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik0xMiAyTDIyIDEyTDEyIDIyTDIgMTJMMTIgMloiLz48cGF0aCBkPSJNMTIgN0wxNyAxMkwxMiAxN0w3IDEyTDEyIDdaIiBmaWxsLW9wYWNpdHk9IjAuMyIvPjwvc3ZnPg==&logoColor=white" alt="Bright Data" />
+  <img src="https://img.shields.io/badge/Neo4j-4581C3?style=for-the-badge&logo=neo4j&logoColor=white" alt="Neo4j" />
+  <img src="https://img.shields.io/badge/Google%20Gemini-886FBF?style=for-the-badge&logo=googlegemini&logoColor=white" alt="Gemini" />
+  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
+  <img src="https://img.shields.io/badge/Slack-4A154B?style=for-the-badge&logo=slack&logoColor=white" alt="Slack" />
+  <img src="https://img.shields.io/badge/Telegram-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram" />
+</p>
+
+| Technology | Role |
+|-----------|------|
+| [Bright Data](https://brightdata.com) | Self-healing web scraping — Scraper Studio CLI |
+| [Google Gemini](https://ai.google.dev) | LLM-powered semantic extraction (2.5 Flash) |
+| [Neo4j](https://neo4j.com) | Impact graph traversal engine |
+| [FastAPI](https://fastapi.tiangolo.com) | Async API framework |
+| [Pydantic](https://pydantic.dev) | Type-safe domain models |
 
 ---
 
