@@ -10,9 +10,12 @@ import {
   type Edge,
   type Connection,
   MarkerType,
+  useReactFlow,
+  ReactFlowProvider,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef, useImperativeHandle, forwardRef } from "react";
+import { toPng } from "html-to-image";
 
 import SalesforceNode from "./nodes/SalesforceNode";
 import VersionNode from "./nodes/VersionNode";
@@ -52,13 +55,29 @@ const initialEdges: Edge[] = [
   { id: "bd-eng", source: "bd", target: "eng", sourceHandle: "right", targetHandle: "left-t", animated: true, style: { stroke: "#444", strokeWidth: 3 }, markerEnd: { type: MarkerType.ArrowClosed, color: "#666", width: 14, height: 14 }, type: "smoothstep" },
   { id: "eng-alerts", source: "eng", target: "alerts", sourceHandle: "right", targetHandle: "left-t", animated: true, style: { stroke: "#444", strokeWidth: 3 }, markerEnd: { type: MarkerType.ArrowClosed, color: "#666", width: 14, height: 14 }, type: "smoothstep" },
   { id: "alerts-slack", source: "alerts", target: "slack", sourceHandle: "top", targetHandle: "left-t", animated: true, style: { stroke: "#444", strokeWidth: 3 }, markerEnd: { type: MarkerType.ArrowClosed, color: "#666", width: 14, height: 14 }, type: "smoothstep" },
-  { id: "alerts-tg", source: "alerts", target: "tg", sourceHandle: "right", targetHandle: "left-t", animated: true, style: { stroke: "#444", strokeWidth: 3 }, markerEnd: { type: MarkerType.ArrowClosed, color: "#666", width: 14, height: 14 }, type: "smoothstep" },
-  { id: "alerts-wh", source: "alerts", target: "wh", sourceHandle: "bottom", targetHandle: "left-t", animated: true, style: { stroke: "#444", strokeWidth: 3 }, markerEnd: { type: MarkerType.ArrowClosed, color: "#666", width: 14, height: 14 }, type: "smoothstep" },
+  { id: "alerts-tg", source: "alerts", target: "tg", sourceHandle: "top", targetHandle: "left-t", animated: true, style: { stroke: "#444", strokeWidth: 3 }, markerEnd: { type: MarkerType.ArrowClosed, color: "#666", width: 14, height: 14 }, type: "smoothstep" },
+  { id: "alerts-wh", source: "alerts", target: "wh", sourceHandle: "top", targetHandle: "left-t", animated: true, style: { stroke: "#444", strokeWidth: 3 }, markerEnd: { type: MarkerType.ArrowClosed, color: "#666", width: 14, height: 14 }, type: "smoothstep" },
 ];
 
-export default function Canvas({ onNodeClick, versions, discovering, scrapingData, analysisData, alertsData, notificationsSent }: { onNodeClick?: (id: string) => void; versions?: import("@/app/page").VersionInfo[]; discovering?: boolean; scrapingData?: import("@/app/page").ScrapingData; analysisData?: import("@/app/page").AnalysisData; alertsData?: import("@/app/page").AlertsData; notificationsSent?: boolean }) {
+export interface CanvasRef {
+  exportPng: () => void;
+  exportJson: () => void;
+}
+
+interface CanvasProps {
+  onNodeClick?: (id: string) => void;
+  versions?: import("@/app/page").VersionInfo[];
+  discovering?: boolean;
+  scrapingData?: import("@/app/page").ScrapingData;
+  analysisData?: import("@/app/page").AnalysisData;
+  alertsData?: import("@/app/page").AlertsData;
+  notificationsSent?: boolean;
+}
+
+function CanvasInner({ onNodeClick, versions, discovering, scrapingData, analysisData, alertsData, notificationsSent, canvasRef }: CanvasProps & { canvasRef: React.Ref<CanvasRef> }) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const flowRef = useRef<HTMLDivElement>(null);
 
   // Update node data when state changes
   useEffect(() => {
@@ -74,6 +93,27 @@ export default function Canvas({ onNodeClick, versions, discovering, scrapingDat
     );
   }, [versions, discovering, scrapingData, analysisData, alertsData, notificationsSent, setNodes]);
 
+  useImperativeHandle(canvasRef, () => ({
+    exportPng: () => {
+      if (flowRef.current) {
+        toPng(flowRef.current, { backgroundColor: "#000" }).then((dataUrl) => {
+          const link = document.createElement("a");
+          link.download = "tremor-pipeline.png";
+          link.href = dataUrl;
+          link.click();
+        });
+      }
+    },
+    exportJson: () => {
+      const data = { nodes, edges, exportedAt: new Date().toISOString() };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const link = document.createElement("a");
+      link.download = "tremor-pipeline.json";
+      link.href = URL.createObjectURL(blob);
+      link.click();
+    },
+  }));
+
   const onConnect = useCallback(
     (params: Connection) => {
       setEdges((eds) =>
@@ -87,29 +127,41 @@ export default function Canvas({ onNodeClick, versions, discovering, scrapingDat
   );
 
   return (
-    <ReactFlow
-      nodes={nodes}
-      edges={edges}
-      onNodesChange={onNodesChange}
-      onEdgesChange={onEdgesChange}
-      onConnect={onConnect}
-      onNodeClick={(_event, node) => onNodeClick?.(node.id)}
-      nodeTypes={nodeTypes}
-      fitView
-      fitViewOptions={{ padding: 0.15 }}
-      proOptions={{ hideAttribution: true }}
-      zoomOnScroll={false}
-      zoomOnPinch={false}
-      zoomOnDoubleClick={false}
-      panOnDrag={false}
-      panOnScroll={false}
-      preventScrolling={false}
-      snapToGrid={true}
-      snapGrid={[20, 20]}
-      defaultEdgeOptions={edgeDefaults}
-      style={{ background: "var(--bg)" }}
-    >
-      <Background variant={"dots" as any} gap={20} size={1.5} color="#444444" />
-    </ReactFlow>
+    <div ref={flowRef} className="w-full h-full">
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        onNodeClick={(_event, node) => onNodeClick?.(node.id)}
+        nodeTypes={nodeTypes}
+        fitView
+        fitViewOptions={{ padding: 0.15 }}
+        proOptions={{ hideAttribution: true }}
+        zoomOnScroll={false}
+        zoomOnPinch={false}
+        zoomOnDoubleClick={false}
+        panOnDrag={false}
+        panOnScroll={false}
+        preventScrolling={false}
+        snapToGrid={true}
+        snapGrid={[20, 20]}
+        defaultEdgeOptions={edgeDefaults}
+        style={{ background: "var(--bg)" }}
+      >
+        <Background variant={"dots" as any} gap={20} size={1.5} color="#444444" />
+      </ReactFlow>
+    </div>
   );
 }
+
+const Canvas = forwardRef<CanvasRef, CanvasProps>(function Canvas(props, ref) {
+  return (
+    <ReactFlowProvider>
+      <CanvasInner {...props} canvasRef={ref} />
+    </ReactFlowProvider>
+  );
+});
+
+export default Canvas;

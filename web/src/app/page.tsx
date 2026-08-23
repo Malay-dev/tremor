@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Hero from "@/components/Hero";
-import Canvas from "@/components/Canvas";
+import Canvas, { type CanvasRef } from "@/components/Canvas";
 import Sidebar from "@/components/Sidebar";
 import GraphModal from "@/components/GraphModal";
 import Toast, { type ToastItem } from "@/components/Toast";
@@ -46,6 +46,7 @@ export interface AnalysisData {
 }
 
 export default function Home() {
+  const canvasRef = useRef<CanvasRef>(null);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [versions, setVersions] = useState<VersionInfo[]>([]);
   const [discovering, setDiscovering] = useState(false);
@@ -159,6 +160,25 @@ export default function Home() {
     setGraphOpen(true);
   };
 
+  const handleReset = () => {
+    setVersions([]);
+    setDiscovering(false);
+    setScrapingData({ active: false, scraping: false });
+    setAnalysisData({ active: false, analyzing: false, events: [] });
+    setAlertsData({ active: false, generating: false, alerts: [] });
+    setNotificationsSent(false);
+    setToasts([]);
+    setSelectedNode(null);
+  };
+
+  const handleRunAll = () => {
+    handleDiscover();
+    setTimeout(() => handleStartScraping(), 2500);
+    setTimeout(() => handleInitiateAnalysis(), 5000);
+    setTimeout(() => handleGenerateAlerts(), 8000);
+    setTimeout(() => handleSendNotifications(), 10500);
+  };
+
   return (
     <>
       <Hero />
@@ -179,6 +199,10 @@ export default function Home() {
               </select>
             </div>
             <div className="ml-auto flex items-center gap-3">
+              <button onClick={handleRunAll} className="text-[11px] font-medium px-3 py-1.5 rounded-md text-white" style={{ background: "#10B981" }}>Run</button>
+              <button onClick={handleReset} className="text-[11px] font-medium px-3 py-1.5 rounded-md border" style={{ borderColor: "#E5E5E5", color: "#64748B" }}>Reset</button>
+              <button onClick={() => canvasRef.current?.exportPng()} className="text-[11px] font-medium px-3 py-1.5 rounded-md border" style={{ borderColor: "#E5E5E5", color: "#64748B" }}>PNG</button>
+              <button onClick={() => canvasRef.current?.exportJson()} className="text-[11px] font-medium px-3 py-1.5 rounded-md border" style={{ borderColor: "#E5E5E5", color: "#64748B" }}>JSON</button>
               <span className="flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-md" style={{ background: "#ECFDF5", color: "#065F46", border: "1px solid #A7F3D0" }}>
                 <span className="w-[5px] h-[5px] rounded-full bg-[#10B981] animate-pulse" />
                 Live
@@ -193,6 +217,7 @@ export default function Home() {
           <div className="flex flex-1">
             <div className="flex-1" style={{ height: "640px" }}>
               <Canvas
+              ref={canvasRef}
               onNodeClick={(id) => setSelectedNode(id)}
               versions={versions}
               discovering={discovering}
