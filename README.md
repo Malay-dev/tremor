@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <a href="https://tremor-seven.vercel.app/">Live Demo</a> •
+  <a href="https://tremor-seven.vercel.app/">Playground</a> •
   <a href="#how-it-works">How It Works</a> •
   <a href="#example">Example</a> •
   <a href="#quick-start">Quick Start</a> •
