@@ -58,9 +58,9 @@ export default function VersionNode({ data }: Props) {
 
         {versions.some((v) => v.status === "new") && (
           <div className="mt-3 pt-3 border-t flex items-center justify-between" style={{ borderColor: "var(--border)" }}>
-            <span className="px-2 py-1 rounded text-md font-mono" style={{ background: "var(--surface)", color: "var(--text-dim)" }}>v4</span>
+            <span className="px-2 py-1 rounded text-md font-mono" style={{ background: "var(--surface)", color: "var(--text-dim)" }}>{versions.find(v => v.status === "previous")?.file.match(/v?\d+/)?.[0] || "prev"}</span>
             <span className="text-md" style={{ color: "var(--text-dim)" }}>→</span>
-            <span className="px-2 py-1 rounded text-md font-mono" style={{ background: "rgba(16,185,129,0.08)", color: "#10B981" }}>v5</span>
+            <span className="px-2 py-1 rounded text-md font-mono" style={{ background: "rgba(16,185,129,0.08)", color: "#10B981" }}>{versions.find(v => v.status === "new")?.file.match(/v?\d+/)?.[0] || "new"}</span>
           </div>
         )}
       </div>

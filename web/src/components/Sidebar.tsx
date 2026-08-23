@@ -155,9 +155,9 @@ function VersionPanel({ onClose, versions, onStartScraping, scrapingData }: { on
               <div className="pt-4 border-t" style={{ borderColor: "#E5E5E5" }}>
                 <label className="block text-[12px] font-medium mb-2" style={{ color: "#64748B" }}>Comparing</label>
                 <div className="flex items-center gap-3 px-3 py-3 rounded-lg" style={{ background: "#F1F1F5" }}>
-                  <span className="px-2.5 py-1.5 rounded-lg font-mono text-[12px]" style={{ background: "white", color: "#64748B", border: "1px solid #E5E5E5" }}>v4</span>
+                  <span className="px-2.5 py-1.5 rounded-lg font-mono text-[12px]" style={{ background: "white", color: "#64748B", border: "1px solid #E5E5E5" }}>{versions.find(v => v.status === "previous")?.file.match(/v?\d+/)?.[0] || "prev"}</span>
                   <span className="text-[12px]" style={{ color: "#94A3B8" }}>→</span>
-                  <span className="px-2.5 py-1.5 rounded-lg font-mono text-[12px]" style={{ background: "white", color: "#10B981", border: "1px solid #10B981" }}>v5</span>
+                  <span className="px-2.5 py-1.5 rounded-lg font-mono text-[12px]" style={{ background: "white", color: "#10B981", border: "1px solid #10B981" }}>{versions.find(v => v.status === "new")?.file.match(/v?\d+/)?.[0] || "new"}</span>
                 </div>
               </div>
             )}
