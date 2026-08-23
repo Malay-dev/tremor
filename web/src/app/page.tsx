@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import Hero from "@/components/Hero";
-import Canvas, { type CanvasRef } from "@/components/Canvas";
+import Canvas from "@/components/Canvas";
 import Sidebar from "@/components/Sidebar";
 import GraphModal from "@/components/GraphModal";
 import Toast, { type ToastItem } from "@/components/Toast";
@@ -46,7 +46,6 @@ export interface AnalysisData {
 }
 
 export default function Home() {
-  const canvasRef = useRef<CanvasRef>(null);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [versions, setVersions] = useState<VersionInfo[]>([]);
   const [discovering, setDiscovering] = useState(false);
@@ -56,6 +55,7 @@ export default function Home() {
   const [graphOpen, setGraphOpen] = useState(false);
   const [notificationsSent, setNotificationsSent] = useState(false);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
+  const [canvasLocked, setCanvasLocked] = useState(false);
 
   const handleDiscover = () => {
     setDiscovering(true);
@@ -183,41 +183,39 @@ export default function Home() {
     <>
       <Hero />
       <section id="playground" className="px-6 md:px-12 pb-20">
-        <div className="max-w-[1440px] mx-auto rounded-2xl border overflow-hidden flex flex-col" style={{ background: "#FFFFFF", borderColor: "#E5E5E5", boxShadow: "0 4px 24px rgba(0,0,0,0.06)" }}>
-          {/* Top toolbar */}
-          <div className="flex items-center px-4 py-2.5 border-b" style={{ borderColor: "#E5E5E5" }}>
-            <div className="flex items-center gap-3">
-              <span className="text-[12px] font-medium" style={{ color: "#94A3B8" }}>Pipeline</span>
-              <select
-                className="px-3 py-1.5 rounded-md text-[12px] font-medium border outline-none cursor-pointer"
-                style={{ background: "white", color: "#0F172A", borderColor: "#E5E5E5" }}
-                defaultValue="iga"
-              >
-                <option value="iga">IGA — Salesforce</option>
-                <option value="rfp">RFP — Government Portal</option>
-                <option value="api">API — Stripe Docs</option>
-              </select>
-            </div>
-            <div className="ml-auto flex items-center gap-3">
-              <button onClick={handleRunAll} className="text-[11px] font-medium px-3 py-1.5 rounded-md text-white" style={{ background: "#10B981" }}>Run</button>
-              <button onClick={handleReset} className="text-[11px] font-medium px-3 py-1.5 rounded-md border" style={{ borderColor: "#E5E5E5", color: "#64748B" }}>Reset</button>
-              <button onClick={() => canvasRef.current?.exportPng()} className="text-[11px] font-medium px-3 py-1.5 rounded-md border" style={{ borderColor: "#E5E5E5", color: "#64748B" }}>PNG</button>
-              <button onClick={() => canvasRef.current?.exportJson()} className="text-[11px] font-medium px-3 py-1.5 rounded-md border" style={{ borderColor: "#E5E5E5", color: "#64748B" }}>JSON</button>
-              <span className="flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-md" style={{ background: "#ECFDF5", color: "#065F46", border: "1px solid #A7F3D0" }}>
-                <span className="w-[5px] h-[5px] rounded-full bg-[#10B981] animate-pulse" />
-                Live
-              </span>
-              <span className="text-[11px] px-2.5 py-1 rounded-md" style={{ background: "#F1F1F5", color: "#64748B" }}>
-                {analysisData.events.length > 0 ? `${analysisData.events.length} events` : "0 events"}
-              </span>
-            </div>
+        {/* Toolbar — outside the canvas container */}
+        <div className="max-w-[1440px] mx-auto flex items-center px-4 py-2.5 mb-3 rounded-lg border" style={{ background: "white", borderColor: "#E5E5E5" }}>
+          <div className="flex items-center gap-3">
+            <span className="text-[12px] font-medium" style={{ color: "#94A3B8" }}>Pipeline</span>
+            <select
+              className="px-3 py-1.5 rounded-md text-[12px] font-medium border outline-none cursor-pointer"
+              style={{ background: "white", color: "#0F172A", borderColor: "#E5E5E5" }}
+              defaultValue="iga"
+            >
+              <option value="iga">IGA — Salesforce</option>
+              <option value="rfp">RFP — Government Portal</option>
+              <option value="api">API — Stripe Docs</option>
+            </select>
           </div>
+          <div className="ml-auto flex items-center gap-3">
+            <button onClick={handleRunAll} className="text-[11px] font-medium px-3 py-1.5 rounded-md text-white" style={{ background: "#10B981" }}>Run</button>
+            <button onClick={handleReset} className="text-[11px] font-medium px-3 py-1.5 rounded-md border" style={{ borderColor: "#E5E5E5", color: "#64748B" }}>Reset</button>
+            <span className="flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-md" style={{ background: "#ECFDF5", color: "#065F46", border: "1px solid #A7F3D0" }}>
+              <span className="w-[5px] h-[5px] rounded-full bg-[#10B981] animate-pulse" />
+              Live
+            </span>
+            <span className="text-[11px] px-2.5 py-1 rounded-md" style={{ background: "#F1F1F5", color: "#64748B" }}>
+              {analysisData.events.length > 0 ? `${analysisData.events.length} events` : "0 events"}
+            </span>
+          </div>
+        </div>
 
+        {/* Canvas container */}
+        <div className="max-w-[1440px] mx-auto rounded-2xl border overflow-hidden flex flex-col" style={{ background: "#FFFFFF", borderColor: "#E5E5E5", boxShadow: "0 4px 24px rgba(0,0,0,0.06)" }}>
           {/* Canvas */}
           <div className="flex flex-1">
             <div className="flex-1" style={{ height: "640px" }}>
               <Canvas
-              ref={canvasRef}
               onNodeClick={(id) => setSelectedNode(id)}
               versions={versions}
               discovering={discovering}
@@ -225,6 +223,7 @@ export default function Home() {
               analysisData={analysisData}
               alertsData={alertsData}
               notificationsSent={notificationsSent}
+              locked={canvasLocked}
             />
           </div>
 

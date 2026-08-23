@@ -3,6 +3,7 @@
 import {
   ReactFlow,
   Background,
+  Controls,
   useNodesState,
   useEdgesState,
   addEdge,
@@ -38,14 +39,14 @@ const nodeTypes = {
 };
 
 const initialNodes: Node[] = [
-  { id: "sf", type: "salesforce", position: { x: 40, y: 20 }, data: {} },
-  { id: "ver", type: "version", position: { x: 20, y: 240 }, data: {} },
-  { id: "bd", type: "brightdata", position: { x: 360, y: 200 }, data: {} },
-  { id: "eng", type: "tremor", position: { x: 680, y: 160 }, data: {} },
-  { id: "alerts", type: "alerts", position: { x: 1040, y: 180 }, data: {} },
-  { id: "slack", type: "slack", position: { x: 1380, y: 40 }, data: {} },
-  { id: "tg", type: "telegram", position: { x: 1380, y: 200 }, data: {} },
-  { id: "wh", type: "webhook", position: { x: 1380, y: 360 }, data: {} },
+  { id: "sf", type: "salesforce", position: { x: -20, y: -40 }, data: {} },
+  { id: "ver", type: "version", position: { x: 0, y: 260 }, data: {} },
+  { id: "bd", type: "brightdata", position: { x: 380, y: 120 }, data: {} },
+  { id: "eng", type: "tremor", position: { x: 760, y: 160 }, data: {} },
+  { id: "alerts", type: "alerts", position: { x: 1280, y: 260 }, data: {} },
+  { id: "slack", type: "slack", position: { x: 1140, y: -100 }, data: {} },
+  { id: "tg", type: "telegram", position: { x: 1320, y: 0 }, data: {} },
+  { id: "wh", type: "webhook", position: { x: 1400, y: 120 }, data: {} },
 ];
 
 const edgeDefaults = { type: "smoothstep" as const };
@@ -72,9 +73,10 @@ interface CanvasProps {
   analysisData?: import("@/app/page").AnalysisData;
   alertsData?: import("@/app/page").AlertsData;
   notificationsSent?: boolean;
+  locked?: boolean;
 }
 
-function CanvasInner({ onNodeClick, versions, discovering, scrapingData, analysisData, alertsData, notificationsSent, canvasRef }: CanvasProps & { canvasRef: React.Ref<CanvasRef> }) {
+function CanvasInner({ onNodeClick, versions, discovering, scrapingData, analysisData, alertsData, notificationsSent, locked, canvasRef }: CanvasProps & { canvasRef: React.Ref<CanvasRef> }) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const flowRef = useRef<HTMLDivElement>(null);
@@ -96,11 +98,23 @@ function CanvasInner({ onNodeClick, versions, discovering, scrapingData, analysi
   useImperativeHandle(canvasRef, () => ({
     exportPng: () => {
       if (flowRef.current) {
-        toPng(flowRef.current, { backgroundColor: "#000" }).then((dataUrl) => {
+        toPng(flowRef.current, {
+          backgroundColor: "#0A0A0F",
+          skipFonts: true,
+          fetchRequestInit: { mode: "no-cors" as RequestMode },
+          filter: (node) => {
+            if (node instanceof HTMLLinkElement) return false;
+            return true;
+          },
+          includeQueryParams: true,
+        }).then((dataUrl) => {
           const link = document.createElement("a");
           link.download = "tremor-pipeline.png";
           link.href = dataUrl;
           link.click();
+        }).catch(() => {
+          // Fallback: use canvas API directly
+          alert("PNG export requires allowing cross-origin access. Use browser screenshot (Cmd+Shift+4) as fallback.");
         });
       }
     },
@@ -137,20 +151,22 @@ function CanvasInner({ onNodeClick, versions, discovering, scrapingData, analysi
         onNodeClick={(_event, node) => onNodeClick?.(node.id)}
         nodeTypes={nodeTypes}
         fitView
-        fitViewOptions={{ padding: 0.15 }}
+        fitViewOptions={{ padding: 0.1, minZoom: 0.6 }}
         proOptions={{ hideAttribution: true }}
-        zoomOnScroll={false}
-        zoomOnPinch={false}
-        zoomOnDoubleClick={false}
-        panOnDrag={false}
-        panOnScroll={false}
-        preventScrolling={false}
+        zoomOnScroll={!locked}
+        zoomOnPinch={!locked}
+        zoomOnDoubleClick={!locked}
+        panOnDrag={!locked}
+        panOnScroll={!locked}
+        preventScrolling={!locked}
+        nodesDraggable={!locked}
         snapToGrid={true}
         snapGrid={[20, 20]}
         defaultEdgeOptions={edgeDefaults}
         style={{ background: "var(--bg)" }}
       >
         <Background variant={"dots" as any} gap={20} size={1.5} color="#444444" />
+      <Controls showInteractive={true} position="bottom-right" />
       </ReactFlow>
     </div>
   );
