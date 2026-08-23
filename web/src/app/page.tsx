@@ -9,6 +9,7 @@ import Toast, { type ToastItem } from "@/components/Toast";
 import SlackLogo from "@/components/logos/SlackLogo";
 import TelegramLogo from "@/components/logos/TelegramLogo";
 import WebhooksIcon from "@/components/icons/WebhooksIcon";
+import { PIPELINES } from "@/components/pipelines";
 
 export interface VersionInfo {
   file: string;
@@ -47,6 +48,7 @@ export interface AnalysisData {
 
 export default function Home() {
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
+  const [pipelineId, setPipelineId] = useState("iga");
   const [versions, setVersions] = useState<VersionInfo[]>([]);
   const [discovering, setDiscovering] = useState(false);
   const [scrapingData, setScrapingData] = useState<ScrapingData>({ active: false, scraping: false });
@@ -57,27 +59,20 @@ export default function Home() {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const [canvasLocked, setCanvasLocked] = useState(false);
 
+  // Handle lock toggle from Controls' interactive button
+  const onInteractiveChange = (interactive: boolean) => {
+    setCanvasLocked(!interactive);
+  };
+
   const handleDiscover = () => {
     setDiscovering(true);
     setVersions([]);
+    const pipeline = PIPELINES[pipelineId];
+    const pVersions = pipeline.versions;
 
-    setTimeout(() => {
-      setVersions([{ file: "accounts-v3.html", status: "old" }]);
-    }, 600);
-    setTimeout(() => {
-      setVersions([
-        { file: "accounts-v3.html", status: "old" },
-        { file: "accounts-v4.html", status: "previous" },
-      ]);
-    }, 1200);
-    setTimeout(() => {
-      setVersions([
-        { file: "accounts-v3.html", status: "old" },
-        { file: "accounts-v4.html", status: "previous" },
-        { file: "account-v5.html", status: "new" },
-      ]);
-      setDiscovering(false);
-    }, 1800);
+    setTimeout(() => { setVersions(pVersions.slice(0, 1)); }, 600);
+    setTimeout(() => { setVersions(pVersions.slice(0, 2)); }, 1200);
+    setTimeout(() => { setVersions(pVersions); setDiscovering(false); }, 1800);
   };
 
   const handleStartScraping = () => {
@@ -89,71 +84,36 @@ export default function Home() {
 
   const handleInitiateAnalysis = () => {
     setAnalysisData({ active: false, analyzing: true, events: [] });
+    const pipeline = PIPELINES[pipelineId];
     setTimeout(() => {
-      setAnalysisData({
-        active: true,
-        analyzing: false,
-        events: [
-          { shift: "BREAKING_REMOVAL", entity: "auth_flows", severity: "CRITICAL", before: "API Key", after: "OAuth 2.0" },
-          { shift: "STATE_SPACE_EXPANDED", entity: "User.status", severity: "HIGH", before: "BOOLEAN", after: "ENUM(ACTIVE,INACTIVE,SUSPENDED)" },
-          { shift: "NULLABILITY_CHANGED", entity: "User.department", severity: "HIGH", before: "optional", after: "required" },
-          { shift: "NULLABILITY_CHANGED", entity: "User.manager_id", severity: "HIGH", before: "optional", after: "required" },
-          { shift: "DEPRECATION_ANNOUNCED", entity: "User.phone", severity: "MEDIUM", before: "active", after: "deprecated" },
-          { shift: "SCOPE_WIDENED", entity: "POST /User/{id}/lifecycle", severity: "INFO", before: "absent", after: "added" },
-        ],
-      });
+      setAnalysisData({ active: true, analyzing: false, events: pipeline.analysisEvents });
     }, 2500);
   };
 
   const handleGenerateAlerts = () => {
     setAlertsData({ active: false, generating: true, alerts: [] });
+    const pipeline = PIPELINES[pipelineId];
     setTimeout(() => {
-      setAlertsData({
-        active: true,
-        generating: false,
-        alerts: [
-          { title: "Auth flow removed", severity: "CRITICAL", entity: "auth_flows", summary: "Connector authentication will fail immediately", remediation: "Update connector auth to OAuth 2.0", effort: "1 hour" },
-          { title: "Status field expanded", severity: "HIGH", entity: "User.status", summary: "Provisioning rules won't handle SUSPENDED state", remediation: "Update attribute mapping for new states", effort: "2-4 hours" },
-          { title: "Department now required", severity: "HIGH", entity: "User.department", summary: "Integrations not providing it will fail", remediation: "Review ABAC policies referencing this attribute", effort: "1 hour" },
-          { title: "Phone field deprecated", severity: "MEDIUM", entity: "User.phone", summary: "Plan migration before removal", remediation: "Schedule connector update in next maintenance", effort: "1 sprint" },
-        ],
-      });
+      setAlertsData({ active: true, generating: false, alerts: pipeline.alerts });
     }, 2000);
   };
 
   const handleSendNotifications = () => {
     setNotificationsSent(true);
-    setTimeout(() => {
-      setToasts((t) => [...t, {
-        id: "slack",
-        channel: "Slack",
-        target: "#iam-alerts",
-        message: "⚠️ CRITICAL: Auth flow removed — connector authentication will fail. Update to OAuth 2.0 immediately. (1 critical, 2 high, 1 medium)",
-        icon: <SlackLogo size={22} />,
-      }]);
-    }, 400);
-    setTimeout(() => {
-      setToasts((t) => [...t, {
-        id: "telegram",
-        channel: "Telegram",
-        target: "IAM Engineering",
-        message: "🔴 BREAKING_REMOVAL: auth_flows changed from API Key to OAuth 2.0. Affected: Provisioning Connector, Lifecycle Workflows, Employee Offboarding. Risk: 0.85",
-        icon: <TelegramLogo size={22} />,
-      }]);
-    }, 1200);
-    setTimeout(() => {
-      setToasts((t) => [...t, {
-        id: "webhook",
-        channel: "Webhook",
-        target: "ServiceNow",
-        message: "IGA-2847 created: \"Update Salesforce connector auth configuration\" — Priority: Critical, Assignee: IAM Engineering, Effort: 1 hour",
-        icon: <WebhooksIcon size={22} />,
-      }]);
-    }, 2000);
-    // Keep toasts visible longer
-    setTimeout(() => {
-      setToasts([]);
-    }, 12000);
+    const pipeline = PIPELINES[pipelineId];
+    const iconMap: Record<string, React.ReactNode> = {
+      slack: <SlackLogo size={22} />,
+      telegram: <TelegramLogo size={22} />,
+      webhook: <WebhooksIcon size={22} />,
+      sheets: <span className="text-[18px]">📊</span>,
+      jira: <span className="text-[18px]">🎫</span>,
+    };
+    pipeline.toasts.forEach((t, i) => {
+      setTimeout(() => {
+        setToasts((prev) => [...prev, { ...t, icon: iconMap[t.iconType] || <span>📨</span> }]);
+      }, 400 + i * 800);
+    });
+    setTimeout(() => { setToasts([]); }, 12000);
   };
 
   const handleViewGraph = () => {
@@ -190,7 +150,8 @@ export default function Home() {
             <select
               className="px-3 py-1.5 rounded-md text-[12px] font-medium border outline-none cursor-pointer"
               style={{ background: "white", color: "#0F172A", borderColor: "#E5E5E5" }}
-              defaultValue="iga"
+              value={pipelineId}
+              onChange={(e) => { setPipelineId(e.target.value); handleReset(); }}
             >
               <option value="iga">IGA — Salesforce</option>
               <option value="rfp">RFP — Government Portal</option>
@@ -224,6 +185,8 @@ export default function Home() {
               alertsData={alertsData}
               notificationsSent={notificationsSent}
               locked={canvasLocked}
+              onLockChange={onInteractiveChange}
+              pipelineId={pipelineId}
             />
           </div>
 

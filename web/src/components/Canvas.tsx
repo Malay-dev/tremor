@@ -26,6 +26,10 @@ import AlertsNode from "./nodes/AlertsNode";
 import SlackNode from "./nodes/SlackNode";
 import TelegramNode from "./nodes/TelegramNode";
 import WebhookNode from "./nodes/WebhookNode";
+import RfpSourceNode from "./nodes/RfpSourceNode";
+import StripeSourceNode from "./nodes/StripeSourceNode";
+import SheetsNode from "./nodes/SheetsNode";
+import JiraNode from "./nodes/JiraNode";
 
 const nodeTypes = {
   salesforce: SalesforceNode,
@@ -36,34 +40,20 @@ const nodeTypes = {
   slack: SlackNode,
   telegram: TelegramNode,
   webhook: WebhookNode,
+  rfpSource: RfpSourceNode,
+  stripeSource: StripeSourceNode,
+  sheets: SheetsNode,
+  jira: JiraNode,
 };
 
-const initialNodes: Node[] = [
-  { id: "sf", type: "salesforce", position: { x: -20, y: -40 }, data: {} },
-  { id: "ver", type: "version", position: { x: 0, y: 260 }, data: {} },
-  { id: "bd", type: "brightdata", position: { x: 380, y: 120 }, data: {} },
-  { id: "eng", type: "tremor", position: { x: 760, y: 160 }, data: {} },
-  { id: "alerts", type: "alerts", position: { x: 1280, y: 260 }, data: {} },
-  { id: "slack", type: "slack", position: { x: 1140, y: -100 }, data: {} },
-  { id: "tg", type: "telegram", position: { x: 1320, y: 0 }, data: {} },
-  { id: "wh", type: "webhook", position: { x: 1400, y: 120 }, data: {} },
-];
-
 const edgeDefaults = { type: "smoothstep" as const };
-const initialEdges: Edge[] = [
-  { id: "sf-ver", source: "sf", target: "ver", sourceHandle: "bottom", targetHandle: "top-t", animated: true, style: { stroke: "#444", strokeWidth: 3 }, markerEnd: { type: MarkerType.ArrowClosed, color: "#666", width: 14, height: 14 }, type: "smoothstep" },
-  { id: "ver-bd", source: "ver", target: "bd", sourceHandle: "right", targetHandle: "left-t", animated: true, style: { stroke: "#444", strokeWidth: 3 }, markerEnd: { type: MarkerType.ArrowClosed, color: "#666", width: 14, height: 14 }, type: "smoothstep" },
-  { id: "bd-eng", source: "bd", target: "eng", sourceHandle: "right", targetHandle: "left-t", animated: true, style: { stroke: "#444", strokeWidth: 3 }, markerEnd: { type: MarkerType.ArrowClosed, color: "#666", width: 14, height: 14 }, type: "smoothstep" },
-  { id: "eng-alerts", source: "eng", target: "alerts", sourceHandle: "right", targetHandle: "left-t", animated: true, style: { stroke: "#444", strokeWidth: 3 }, markerEnd: { type: MarkerType.ArrowClosed, color: "#666", width: 14, height: 14 }, type: "smoothstep" },
-  { id: "alerts-slack", source: "alerts", target: "slack", sourceHandle: "top", targetHandle: "left-t", animated: true, style: { stroke: "#444", strokeWidth: 3 }, markerEnd: { type: MarkerType.ArrowClosed, color: "#666", width: 14, height: 14 }, type: "smoothstep" },
-  { id: "alerts-tg", source: "alerts", target: "tg", sourceHandle: "top", targetHandle: "left-t", animated: true, style: { stroke: "#444", strokeWidth: 3 }, markerEnd: { type: MarkerType.ArrowClosed, color: "#666", width: 14, height: 14 }, type: "smoothstep" },
-  { id: "alerts-wh", source: "alerts", target: "wh", sourceHandle: "top", targetHandle: "left-t", animated: true, style: { stroke: "#444", strokeWidth: 3 }, markerEnd: { type: MarkerType.ArrowClosed, color: "#666", width: 14, height: 14 }, type: "smoothstep" },
-];
 
 export interface CanvasRef {
   exportPng: () => void;
   exportJson: () => void;
 }
+
+import { PIPELINES } from "./pipelines";
 
 interface CanvasProps {
   onNodeClick?: (id: string) => void;
@@ -74,12 +64,22 @@ interface CanvasProps {
   alertsData?: import("@/app/page").AlertsData;
   notificationsSent?: boolean;
   locked?: boolean;
+  onLockChange?: (interactive: boolean) => void;
+  pipelineId?: string;
 }
 
-function CanvasInner({ onNodeClick, versions, discovering, scrapingData, analysisData, alertsData, notificationsSent, locked, canvasRef }: CanvasProps & { canvasRef: React.Ref<CanvasRef> }) {
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+function CanvasInner({ onNodeClick, versions, discovering, scrapingData, analysisData, alertsData, notificationsSent, locked, onLockChange, pipelineId, canvasRef }: CanvasProps & { canvasRef: React.Ref<CanvasRef> }) {
+  const pipeline = PIPELINES[pipelineId || "iga"];
+  const [nodes, setNodes, onNodesChange] = useNodesState(pipeline.nodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(pipeline.edges);
   const flowRef = useRef<HTMLDivElement>(null);
+
+  // Reset nodes/edges when pipeline changes
+  useEffect(() => {
+    const p = PIPELINES[pipelineId || "iga"];
+    setNodes(p.nodes);
+    setEdges(p.edges);
+  }, [pipelineId, setNodes, setEdges]);
 
   // Update node data when state changes
   useEffect(() => {
@@ -166,7 +166,7 @@ function CanvasInner({ onNodeClick, versions, discovering, scrapingData, analysi
         style={{ background: "var(--bg)" }}
       >
         <Background variant={"dots" as any} gap={20} size={1.5} color="#444444" />
-      <Controls showInteractive={true} position="bottom-right" />
+      <Controls showInteractive={true} position="bottom-right" onInteractiveChange={(interactive) => onLockChange?.(interactive)} />
       </ReactFlow>
     </div>
   );
