@@ -17,11 +17,11 @@ export default function SlackNode({ data }: Props) {
             <path d="M15.18 18.96a2.52 2.52 0 1 1-2.52 2.52v-2.52h2.52zm0-1.26a2.52 2.52 0 1 1 0-5.04h6.3a2.52 2.52 0 0 1 0 5.04h-6.3z" fill="#ECB22E"/>
           </svg>
           <div className="flex-1">
-            <div className="text-[12px] font-medium" style={{ color: "var(--text)" }}>Slack</div>
-            <div className="text-[10px]" style={{ color: "var(--text-dim)" }}>#iam-alerts</div>
+            <div className="text-md font-medium" style={{ color: "var(--text)" }}>Slack</div>
+            <div className="text-sm" style={{ color: "var(--text-dim)" }}>#iam-alerts</div>
           </div>
-          {data.sent && <span className="text-[10px] font-semibold" style={{ color: "#10B981" }}>✓ Sent</span>}
-          {!data.sent && <span className="text-[10px]" style={{ color: "var(--text-dim)" }}>Idle</span>}
+          {data.sent && <span className="text-sm font-semibold" style={{ color: "#10B981" }}>✓ Sent</span>}
+          {!data.sent && <span className="text-sm" style={{ color: "var(--text-dim)" }}>Idle</span>}
         </div>
       </div>
     </NodeShell>

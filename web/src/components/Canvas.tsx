@@ -35,14 +35,14 @@ const nodeTypes = {
 };
 
 const initialNodes: Node[] = [
-  { id: "sf", type: "salesforce", position: { x: 80, y: 40 }, data: {} },
-  { id: "ver", type: "version", position: { x: 20, y: 260 }, data: {} },
-  { id: "bd", type: "brightdata", position: { x: 560, y: 200 }, data: {} },
-  { id: "eng", type: "tremor", position: { x: 900, y: 180 }, data: {} },
-  { id: "alerts", type: "alerts", position: { x: 1260, y: 200 }, data: {} },
-  { id: "slack", type: "slack", position: { x: 1600, y: 100 }, data: {} },
-  { id: "tg", type: "telegram", position: { x: 1600, y: 260 }, data: {} },
-  { id: "wh", type: "webhook", position: { x: 1600, y: 420 }, data: {} },
+  { id: "sf", type: "salesforce", position: { x: 40, y: 20 }, data: {} },
+  { id: "ver", type: "version", position: { x: 20, y: 240 }, data: {} },
+  { id: "bd", type: "brightdata", position: { x: 360, y: 200 }, data: {} },
+  { id: "eng", type: "tremor", position: { x: 680, y: 160 }, data: {} },
+  { id: "alerts", type: "alerts", position: { x: 1040, y: 180 }, data: {} },
+  { id: "slack", type: "slack", position: { x: 1380, y: 40 }, data: {} },
+  { id: "tg", type: "telegram", position: { x: 1380, y: 200 }, data: {} },
+  { id: "wh", type: "webhook", position: { x: 1380, y: 360 }, data: {} },
 ];
 
 const edgeDefaults = { type: "smoothstep" as const };
@@ -51,9 +51,9 @@ const initialEdges: Edge[] = [
   { id: "ver-bd", source: "ver", target: "bd", sourceHandle: "right", targetHandle: "left-t", animated: true, style: { stroke: "#444", strokeWidth: 3 }, markerEnd: { type: MarkerType.ArrowClosed, color: "#666", width: 14, height: 14 }, type: "smoothstep" },
   { id: "bd-eng", source: "bd", target: "eng", sourceHandle: "right", targetHandle: "left-t", animated: true, style: { stroke: "#444", strokeWidth: 3 }, markerEnd: { type: MarkerType.ArrowClosed, color: "#666", width: 14, height: 14 }, type: "smoothstep" },
   { id: "eng-alerts", source: "eng", target: "alerts", sourceHandle: "right", targetHandle: "left-t", animated: true, style: { stroke: "#444", strokeWidth: 3 }, markerEnd: { type: MarkerType.ArrowClosed, color: "#666", width: 14, height: 14 }, type: "smoothstep" },
-  { id: "alerts-slack", source: "alerts", target: "slack", sourceHandle: "right", targetHandle: "left-t", animated: true, style: { stroke: "#444", strokeWidth: 3 }, markerEnd: { type: MarkerType.ArrowClosed, color: "#666", width: 14, height: 14 }, type: "smoothstep" },
+  { id: "alerts-slack", source: "alerts", target: "slack", sourceHandle: "top", targetHandle: "left-t", animated: true, style: { stroke: "#444", strokeWidth: 3 }, markerEnd: { type: MarkerType.ArrowClosed, color: "#666", width: 14, height: 14 }, type: "smoothstep" },
   { id: "alerts-tg", source: "alerts", target: "tg", sourceHandle: "right", targetHandle: "left-t", animated: true, style: { stroke: "#444", strokeWidth: 3 }, markerEnd: { type: MarkerType.ArrowClosed, color: "#666", width: 14, height: 14 }, type: "smoothstep" },
-  { id: "alerts-wh", source: "alerts", target: "wh", sourceHandle: "right", targetHandle: "left-t", animated: true, style: { stroke: "#444", strokeWidth: 3 }, markerEnd: { type: MarkerType.ArrowClosed, color: "#666", width: 14, height: 14 }, type: "smoothstep" },
+  { id: "alerts-wh", source: "alerts", target: "wh", sourceHandle: "bottom", targetHandle: "left-t", animated: true, style: { stroke: "#444", strokeWidth: 3 }, markerEnd: { type: MarkerType.ArrowClosed, color: "#666", width: 14, height: 14 }, type: "smoothstep" },
 ];
 
 export default function Canvas({ onNodeClick, versions, discovering, scrapingData, analysisData, alertsData, notificationsSent }: { onNodeClick?: (id: string) => void; versions?: import("@/app/page").VersionInfo[]; discovering?: boolean; scrapingData?: import("@/app/page").ScrapingData; analysisData?: import("@/app/page").AnalysisData; alertsData?: import("@/app/page").AlertsData; notificationsSent?: boolean }) {

@@ -5,6 +5,9 @@ import Hero from "@/components/Hero";
 import Canvas from "@/components/Canvas";
 import Sidebar from "@/components/Sidebar";
 import GraphModal from "@/components/GraphModal";
+import Toast, { type ToastItem } from "@/components/Toast";
+import SlackLogo from "@/components/logos/SlackLogo";
+import TelegramLogo from "@/components/logos/TelegramLogo";
 
 export interface VersionInfo {
   file: string;
@@ -50,6 +53,7 @@ export default function Home() {
   const [alertsData, setAlertsData] = useState<AlertsData>({ active: false, generating: false, alerts: [] });
   const [graphOpen, setGraphOpen] = useState(false);
   const [notificationsSent, setNotificationsSent] = useState(false);
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
 
   const handleDiscover = () => {
     setDiscovering(true);
@@ -117,6 +121,37 @@ export default function Home() {
 
   const handleSendNotifications = () => {
     setNotificationsSent(true);
+    setTimeout(() => {
+      setToasts((t) => [...t, {
+        id: "slack",
+        channel: "Slack",
+        target: "#iam-alerts",
+        message: "⚠️ CRITICAL: Auth flow removed — connector authentication will fail. Update to OAuth 2.0 immediately. (1 critical, 2 high, 1 medium)",
+        icon: <SlackLogo size={22} />,
+      }]);
+    }, 400);
+    setTimeout(() => {
+      setToasts((t) => [...t, {
+        id: "telegram",
+        channel: "Telegram",
+        target: "IAM Engineering",
+        message: "🔴 BREAKING_REMOVAL: auth_flows changed from API Key to OAuth 2.0. Affected: Provisioning Connector, Lifecycle Workflows, Employee Offboarding. Risk: 0.85",
+        icon: <TelegramLogo size={22} />,
+      }]);
+    }, 1200);
+    setTimeout(() => {
+      setToasts((t) => [...t, {
+        id: "webhook",
+        channel: "Webhook",
+        target: "ServiceNow",
+        message: "IGA-2847 created: \"Update Salesforce connector auth configuration\" — Priority: Critical, Assignee: IAM Engineering, Effort: 1 hour",
+        icon: <span className="text-[18px]">🔗</span>,
+      }]);
+    }, 2000);
+    // Keep toasts visible longer
+    setTimeout(() => {
+      setToasts([]);
+    }, 12000);
   };
 
   const handleViewGraph = () => {
@@ -164,6 +199,9 @@ export default function Home() {
 
       {/* Graph Modal */}
       <GraphModal open={graphOpen} onClose={() => setGraphOpen(false)} />
+
+      {/* Toasts */}
+      <Toast toasts={toasts} />
     </>
   );
 }
