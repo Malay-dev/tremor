@@ -27,7 +27,7 @@ export default function Sidebar({ nodeId, onClose, onDiscover, onStartScraping, 
   if (nodeId === "ver") return <VersionPanel onClose={onClose} versions={versions} onStartScraping={onStartScraping} scrapingData={scrapingData} />;
   if (nodeId === "bd") return <BrightDataPanel onClose={onClose} scrapingData={scrapingData} onInitiateAnalysis={onInitiateAnalysis} />;
   if (nodeId === "eng") return <TremorPanel onClose={onClose} analysisData={analysisData} onGenerateAlerts={onGenerateAlerts} />;
-  if (nodeId === "alerts") return <AlertsPanel onClose={onClose} alertsData={alertsData} onSendNotifications={onSendNotifications} onViewGraph={onViewGraph} />;
+  if (nodeId === "alerts") return <AlertsPanel onClose={onClose} alertsData={alertsData} onSendNotifications={onSendNotifications} onViewGraph={onViewGraph} pipelineId={pipelineId} />;
 
   return null;
 }
@@ -444,11 +444,11 @@ const ALERT_SEV_COLORS: Record<string, string> = { CRITICAL: "#EF4444", HIGH: "#
 const ALERT_SEV_BG: Record<string, string> = { CRITICAL: "#FEF2F2", HIGH: "#FFF7ED", MEDIUM: "#FEFCE8", LOW: "#F0FDF4" };
 const ALERT_SEV_BORDER: Record<string, string> = { CRITICAL: "#FECACA", HIGH: "#FED7AA", MEDIUM: "#FEF08A", LOW: "#BBF7D0" };
 
-function AlertsPanel({ onClose, alertsData, onSendNotifications, onViewGraph }: { onClose: () => void; alertsData: AlertsData; onSendNotifications: () => void; onViewGraph: () => void }) {
+function AlertsPanel({ onClose, alertsData, onSendNotifications, onViewGraph, pipelineId }: { onClose: () => void; alertsData: AlertsData; onSendNotifications: () => void; onViewGraph: () => void; pipelineId: string }) {
   return (
     <div className="w-[340px] h-full max-h-[680px] border-l overflow-y-auto" style={{ background: "#FAFAFA", borderColor: "#E5E5E5" }}>
       <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: "#E5E5E5" }}>
-        <span className="text-[14px] font-semibold" style={{ color: "#0F172A" }}>Alerts — IGA Adapter</span>
+        <span className="text-[14px] font-semibold" style={{ color: "#0F172A" }}>Alerts — {PIPELINES[pipelineId].id === "rfp" ? "RFP Adapter" : PIPELINES[pipelineId].id === "api" ? "API Adapter" : "IGA Adapter"}</span>
         <button onClick={onClose} className="text-[18px] leading-none px-2 py-1 rounded hover:bg-[#EBEBEB]" style={{ color: "#64748B" }}>×</button>
       </div>
 
