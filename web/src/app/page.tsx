@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import Hero from "@/components/Hero";
 import Canvas from "@/components/Canvas";
 import Sidebar from "@/components/Sidebar";
@@ -10,6 +10,7 @@ import SlackLogo from "@/components/logos/SlackLogo";
 import TelegramLogo from "@/components/logos/TelegramLogo";
 import WebhooksIcon from "@/components/icons/WebhooksIcon";
 import { PIPELINES } from "@/components/pipelines";
+import * as api from "@/lib/api";
 
 export interface VersionInfo {
   file: string;
@@ -64,41 +65,65 @@ export default function Home() {
     setCanvasLocked(!interactive);
   };
 
-  const handleDiscover = () => {
+  const handleDiscover = async () => {
     setDiscovering(true);
     setVersions([]);
     const pipeline = PIPELINES[pipelineId];
-    const pVersions = pipeline.versions;
-
-    setTimeout(() => { setVersions(pVersions.slice(0, 1)); }, 600);
-    setTimeout(() => { setVersions(pVersions.slice(0, 2)); }, 1200);
-    setTimeout(() => { setVersions(pVersions); setDiscovering(false); }, 1800);
+    try {
+      const res = await api.discoverVersions(pipeline.sourceUrl, pipeline.application);
+      // Animate versions in one by one
+      const versionsList = res.versions || pipeline.versions;
+      for (let i = 0; i < versionsList.length; i++) {
+        setTimeout(() => {
+          setVersions(versionsList.slice(0, i + 1));
+          if (i === versionsList.length - 1) setDiscovering(false);
+        }, 600 * (i + 1));
+      }
+    } catch {
+      // Fallback to local data
+      const pVersions = pipeline.versions;
+      setTimeout(() => { setVersions(pVersions.slice(0, 1)); }, 600);
+      setTimeout(() => { setVersions(pVersions.slice(0, 2)); }, 1200);
+      setTimeout(() => { setVersions(pVersions); setDiscovering(false); }, 1800);
+    }
   };
 
-  const handleStartScraping = () => {
+  const handleStartScraping = async () => {
     setScrapingData({ active: false, scraping: true });
-    setTimeout(() => {
-      setScrapingData({ active: true, scraping: false });
-    }, 2000);
+    const pipeline = PIPELINES[pipelineId];
+    try {
+      await api.scrapeVersions(pipeline.sourceUrl, pipeline.application);
+    } catch { /* fallback — just complete */ }
+    setTimeout(() => setScrapingData({ active: true, scraping: false }), 1500);
   };
 
-  const handleInitiateAnalysis = () => {
+  const handleInitiateAnalysis = async () => {
     setAnalysisData({ active: false, analyzing: true, events: [] });
     const pipeline = PIPELINES[pipelineId];
-    setTimeout(() => {
-      setAnalysisData({ active: true, analyzing: false, events: pipeline.analysisEvents });
-    }, 2500);
+    try {
+      const res = await api.analyzeChanges(pipeline.application);
+      setAnalysisData({ active: true, analyzing: false, events: res.events || pipeline.analysisEvents });
+    } catch {
+      setTimeout(() => {
+        setAnalysisData({ active: true, analyzing: false, events: pipeline.analysisEvents });
+      }, 2500);
+    }
   };
 
-  const handleGenerateAlerts = () => {
+  const handleGenerateAlerts = async () => {
     setAlertsData({ active: false, generating: true, alerts: [] });
     const pipeline = PIPELINES[pipelineId];
-    setTimeout(() => {
-      setAlertsData({ active: true, generating: false, alerts: pipeline.alerts });
-    }, 2000);
+    try {
+      const res = await api.generateAlerts(pipeline.application);
+      setAlertsData({ active: true, generating: false, alerts: res.alerts || pipeline.alerts });
+    } catch {
+      setTimeout(() => {
+        setAlertsData({ active: true, generating: false, alerts: pipeline.alerts });
+      }, 2000);
+    }
   };
 
-  const handleSendNotifications = () => {
+  const handleSendNotifications = async () => {
     setNotificationsSent(true);
     const pipeline = PIPELINES[pipelineId];
     const iconMap: Record<string, React.ReactNode> = {
@@ -108,6 +133,12 @@ export default function Home() {
       sheets: <span className="text-[18px]">📊</span>,
       jira: <span className="text-[18px]">🎫</span>,
     };
+
+    try {
+      const channels = pipeline.toasts.map((t) => t.iconType);
+      await api.sendNotifications(pipeline.application, channels);
+    } catch { /* continue with toasts anyway */ }
+
     pipeline.toasts.forEach((t, i) => {
       setTimeout(() => {
         setToasts((prev) => [...prev, { ...t, icon: iconMap[t.iconType] || <span>📨</span> }]);
